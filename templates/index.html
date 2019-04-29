@@ -7,9 +7,10 @@
 <body>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href='{{ url_for('static', filename='css/epa-theme.css') }}'>
 
-<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Factotum API</a>
+<nav class="navbar fixed-top flex-md-nowrap p-0 shadow navbar-custom">
+    <span class="navbar-brand col-sm-3 col-md-2 mr-0" style="color: white">Factotum API</span>
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
             <a class="nav-link" href="#"></a>
@@ -20,7 +21,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-2 list-group fixed-top mt-5" id="sidebar-scrollspy">
-            <a class="list-group-item list-group-item-action" href="#getting_started">
+            <a class="list-group-item list-group-item-action mt-5" href="#getting_started">
                 Getting Started
             </a>
             <a class="list-group-item list-group-item-action" href="#puc">
