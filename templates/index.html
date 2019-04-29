@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Factotum Web Services</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href='{{ url_for('static', filename='css/epa-theme.css') }}'>
+    <link rel="stylesheet" href='{{ url_for('static', filename='css/prism.css') }}'>
 </head>
 <body>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-<link rel="stylesheet" href='{{ url_for('static', filename='css/epa-theme.css') }}'>
-
 <nav class="navbar fixed-top flex-md-nowrap p-0 shadow navbar-custom">
     <span class="navbar-brand col-sm-3 col-md-2 mr-0" style="color: white">Factotum API</span>
     <ul class="navbar-nav px-3">
@@ -43,16 +44,8 @@
                 <h1 class="h2">Factotum Web Services</h1>
             </div>
             <h2 class="pt-5" id="getting_started">Getting Started</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus venenatis semper purus et mollis.
-                Vestibulum
-                at convallis eros. Nulla consectetur, nisl id dictum volutpat, diam leo semper nunc, fringilla ornare
-                erat
-                quam nec massa. Sed urna nisl, mattis sit amet erat sodales, laoreet aliquet est. Duis vestibulum
-                interdum
-                mauris. Quisque vulputate commodo felis, vitae sodales quam pretium et. Praesent euismod metus quis quam
-                faucibus semper. Sed ultrices pulvinar est, at sodales metus volutpat non. Donec porta enim eu augue
-                cursus
-                eleifend. Etiam tempus ipsum quis quam placerat, eget tempor dui porttitor.</p>
+            <p>The Factotum API is a service that provides data about Product Usage Category (PUC), consumer products
+            and the chemicals related to PUCs and products.</p>
             <p>Aenean in convallis erat. Aliquam fringilla auctor rhoncus. Quisque convallis elementum rutrum. Donec
                 elementum leo nec arcu fermentum commodo. Vestibulum lacinia auctor diam in semper. Quisque ut ligula
                 pretium, elementum est vel, facilisis turpis. In elementum eu ligula vel varius. Suspendisse aliquet
@@ -145,5 +138,6 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+<script type="text/javascript" src='{{ url_for('static', filename='js/prism.js') }}' ></script>
 </body>
 </html>
