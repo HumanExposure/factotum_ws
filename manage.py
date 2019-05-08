@@ -115,7 +115,7 @@ def runserver(args):
         gunicorn_app = settings.GunicornConfig().get_app(app.app)
         gunicorn_app.run()
     else:
-        app.app.run()
+        app.app.run(host="0.0.0.0")
 
 
 parser = argparse.ArgumentParser()
