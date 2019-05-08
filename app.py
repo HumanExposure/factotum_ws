@@ -10,4 +10,3 @@ app.config.from_object(settings.FlaskConfig)
 def home(name=None):
     return render_template('index.html', name=name)
 
-app.run()
