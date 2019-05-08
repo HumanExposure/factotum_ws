@@ -1,8 +1,9 @@
 import flask
 from flask import render_template
+import settings
 
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
+app.config.from_object(settings.FlaskConfig)
 
 
 @app.route('/', methods=['GET'])
