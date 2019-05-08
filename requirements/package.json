@@ -1,0 +1,18 @@
+{
+  "name": "factotum_ws_requirements",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.2.0",
+    "prettier": "1.17.0"
+  },
+  "dependencies": {
+    "prettier-plugin-nunjucks": "github:justrhysism/prettier-plugin-nunjucks#a2cd04843137d83550e54f680aab8c41f95b61bc"
+  }
+}
