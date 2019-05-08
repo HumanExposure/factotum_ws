@@ -6,8 +6,8 @@ import unittest
 
 TOP_DIR = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[1])
 NODE_DIR = (
-    "/requirements/node_modules"
-    if os.path.exists("/requirements/node_modules")
+    "/node_modules"
+    if os.path.exists("/node_modules")
     else TOP_DIR + "/requirements/node_modules"
 )
 

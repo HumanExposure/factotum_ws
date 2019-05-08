@@ -44,9 +44,11 @@ def test(args):
 def lint(args):
     """Run linting suite."""
     top_dir = os.path.dirname(os.path.realpath(__file__))
-    node_dir_base = "/requirements/node_modules"
+    node_dir_base = "/node_modules"
     node_dir = (
-        node_dir_base if os.path.exists(node_dir_base) else top_dir + node_dir_base
+        node_dir_base
+        if os.path.exists(node_dir_base)
+        else top_dir + "/requirements" + node_dir_base
     )
     eslint_cmd = (
         node_dir
