@@ -46,10 +46,8 @@ RUN apk add --no-cache \
         nodejs \
         python3-dev
 WORKDIR /wheels/
-COPY --from=pybuild /wheels/ /wheels/
-RUN pip3 install --no-cache-dir /wheels/dev/* \
- && pip3 install --no-cache-dir /wheels/test/* \
- && pip3 install --no-cache-dir /wheels/prod/* \
+COPY --from=pybuild /wheels/dev/ /wheels/
+RUN pip3 install --no-cache-dir /wheels/* \
  && rm -rf /wheels
 COPY --from=npmbuild /node_modules /node_modules
 ENTRYPOINT ["python3", "/app/manage.py"]
