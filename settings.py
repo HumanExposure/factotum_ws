@@ -37,7 +37,7 @@ class PyMySQLConfig(object):
     HOST = os.getenv("FLASK_SQL_HOST")
     USER = os.getenv("FLASK_SQL_USER")
     PASSWORD = os.getenv("FLASK_SQL_PASSWORD")
-    DATABASE = os.getenv("FLASK_SQL_DATABSE")
+    DATABASE = os.getenv("FLASK_SQL_DATABASE")
 
     def get_connection(self):
         """Produce a pymysql database connection using these settings."""
