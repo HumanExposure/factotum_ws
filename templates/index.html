@@ -33,36 +33,20 @@
             </ul>
         </nav>
 
-        <div class="container-fluid">
+        <div class="container">
             <div class="row">
                 <div
-                    class="col-md-2 list-group fixed-top mt-5"
+                    class="col-md-2 d-none d-md-block list-group fixed-top mt-5"
                     id="sidebar-scrollspy"
                 >
-                    <a
-                        class="list-group-item list-group-item-action mt-5"
-                        href="#getting_started"
-                    >
-                        Getting Started
-                    </a>
+                    {% for type in docs %}
                     <a
                         class="list-group-item list-group-item-action"
-                        href="#puc"
+                        href="#{{ docs[type]['href'] }}"
                     >
-                        Product Use Category (PUC)
+                        {{ type }}
                     </a>
-                    <a
-                        class="list-group-item list-group-item-action"
-                        href="#product"
-                    >
-                        Product
-                    </a>
-                    <a
-                        class="list-group-item list-group-item-action"
-                        href="#chemical"
-                    >
-                        Chemical
-                    </a>
+                    {% endfor %}
                 </div>
 
                 <main class="col-md-9 ml-sm-auto col-lg-10 px-4 mt-5">
@@ -77,149 +61,173 @@
                         >
                             <h1 class="h2">Factotum Web Services</h1>
                         </div>
-                        <h2 class="pt-5" id="getting_started">
-                            Getting Started
-                        </h2>
                         <p>
                             The Factotum API is a service that provides data
                             about Product Usage Category (PUC), consumer
                             products and the chemicals related to PUCs and
                             products.
                         </p>
-                        <p>
-                            Aenean in convallis erat. Aliquam fringilla auctor
-                            rhoncus. Quisque convallis elementum rutrum. Donec
-                            elementum leo nec arcu fermentum commodo. Vestibulum
-                            lacinia auctor diam in semper. Quisque ut ligula
-                            pretium, elementum est vel, facilisis turpis. In
-                            elementum eu ligula vel varius. Suspendisse aliquet
-                            molestie risus.
-                        </p>
-                        <h2 class="pt-5" id="puc">
-                            Product Use Category (PUC)
-                        </h2>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit. Vivamus venenatis semper purus et mollis.
-                            Vestibulum at convallis eros. Nulla consectetur,
-                            nisl id dictum volutpat, diam leo semper nunc,
-                            fringilla ornare erat quam nec massa. Sed urna nisl,
-                            mattis sit amet erat sodales, laoreet aliquet est.
-                            Duis vestibulum interdum mauris. Quisque vulputate
-                            commodo felis, vitae sodales quam pretium et.
-                            Praesent euismod metus quis quam faucibus semper.
-                            Sed ultrices pulvinar est, at sodales metus volutpat
-                            non. Donec porta enim eu augue cursus eleifend.
-                            Etiam tempus ipsum quis quam placerat, eget tempor
-                            dui porttitor.
-                        </p>
-                        <p>
-                            Aenean in convallis erat. Aliquam fringilla auctor
-                            rhoncus. Quisque convallis elementum rutrum. Donec
-                            elementum leo nec arcu fermentum commodo. Vestibulum
-                            lacinia auctor diam in semper. Quisque ut ligula
-                            pretium, elementum est vel, facilisis turpis. In
-                            elementum eu ligula vel varius. Suspendisse aliquet
-                            molestie risus.
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit. Vivamus venenatis semper purus et mollis.
-                            Vestibulum at convallis eros. Nulla consectetur,
-                            nisl id dictum volutpat, diam leo semper nunc,
-                            fringilla ornare erat quam nec massa. Sed urna nisl,
-                            mattis sit amet erat sodales, laoreet aliquet est.
-                            Duis vestibulum interdum mauris. Quisque vulputate
-                            commodo felis, vitae sodales quam pretium et.
-                            Praesent euismod metus quis quam faucibus semper.
-                            Sed ultrices pulvinar est, at sodales metus volutpat
-                            non. Donec porta enim eu augue cursus eleifend.
-                            Etiam tempus ipsum quis quam placerat, eget tempor
-                            dui porttitor.
-                        </p>
-                        <p>
-                            Aenean in convallis erat. Aliquam fringilla auctor
-                            rhoncus. Quisque convallis elementum rutrum. Donec
-                            elementum leo nec arcu fermentum commodo. Vestibulum
-                            lacinia auctor diam in semper. Quisque ut ligula
-                            pretium, elementum est vel, facilisis turpis. In
-                            elementum eu ligula vel varius. Suspendisse aliquet
-                            molestie risus.
-                        </p>
-                        <h2 class="pt-5" id="product">Product</h2>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit. Vivamus venenatis semper purus et mollis.
-                            Vestibulum at convallis eros. Nulla consectetur,
-                            nisl id dictum volutpat, diam leo semper nunc,
-                            fringilla ornare erat quam nec massa. Sed urna nisl,
-                            mattis sit amet erat sodales, laoreet aliquet est.
-                            Duis vestibulum interdum mauris. Quisque vulputate
-                            commodo felis, vitae sodales quam pretium et.
-                            Praesent euismod metus quis quam faucibus semper.
-                            Sed ultrices pulvinar est, at sodales metus volutpat
-                            non. Donec porta enim eu augue cursus eleifend.
-                            Etiam tempus ipsum quis quam placerat, eget tempor
-                            dui porttitor.
-                        </p>
-                        <p>
-                            Aenean in convallis erat. Aliquam fringilla auctor
-                            rhoncus. Quisque convallis elementum rutrum. Donec
-                            elementum leo nec arcu fermentum commodo. Vestibulum
-                            lacinia auctor diam in semper. Quisque ut ligula
-                            pretium, elementum est vel, facilisis turpis. In
-                            elementum eu ligula vel varius. Suspendisse aliquet
-                            molestie risus.
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit. Vivamus venenatis semper purus et mollis.
-                            Vestibulum at convallis eros. Nulla consectetur,
-                            nisl id dictum volutpat, diam leo semper nunc,
-                            fringilla ornare erat quam nec massa. Sed urna nisl,
-                            mattis sit amet erat sodales, laoreet aliquet est.
-                            Duis vestibulum interdum mauris. Quisque vulputate
-                            commodo felis, vitae sodales quam pretium et.
-                            Praesent euismod metus quis quam faucibus semper.
-                            Sed ultrices pulvinar est, at sodales metus volutpat
-                            non. Donec porta enim eu augue cursus eleifend.
-                            Etiam tempus ipsum quis quam placerat, eget tempor
-                            dui porttitor.
-                        </p>
-                        <p>
-                            Aenean in convallis erat. Aliquam fringilla auctor
-                            rhoncus. Quisque convallis elementum rutrum. Donec
-                            elementum leo nec arcu fermentum commodo. Vestibulum
-                            lacinia auctor diam in semper. Quisque ut ligula
-                            pretium, elementum est vel, facilisis turpis. In
-                            elementum eu ligula vel varius. Suspendisse aliquet
-                            molestie risus.
-                        </p>
-                        <h2 class="pt-5" id="chemical">Chemical</h2>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit. Vivamus venenatis semper purus et mollis.
-                            Vestibulum at convallis eros. Nulla consectetur,
-                            nisl id dictum volutpat, diam leo semper nunc,
-                            fringilla ornare erat quam nec massa. Sed urna nisl,
-                            mattis sit amet erat sodales, laoreet aliquet est.
-                            Duis vestibulum interdum mauris. Quisque vulputate
-                            commodo felis, vitae sodales quam pretium et.
-                            Praesent euismod metus quis quam faucibus semper.
-                            Sed ultrices pulvinar est, at sodales metus volutpat
-                            non. Donec porta enim eu augue cursus eleifend.
-                            Etiam tempus ipsum quis quam placerat, eget tempor
-                            dui porttitor.
-                        </p>
-                        <p>
-                            Aenean in convallis erat. Aliquam fringilla auctor
-                            rhoncus. Quisque convallis elementum rutrum. Donec
-                            elementum leo nec arcu fermentum commodo. Vestibulum
-                            lacinia auctor diam in semper. Quisque ut ligula
-                            pretium, elementum est vel, facilisis turpis. In
-                            elementum eu ligula vel varius. Suspendisse aliquet
-                            molestie risus.
-                        </p>
+                        {% for type in docs %}
+                        <h4 class="pt-5" id="{{ docs[type][href] }}">
+                            {{ type }}
+                        </h4>
+                        {% for api in docs[type]['apis'] %}
+                        <div class="row pt-3 api-title">
+                            <div class="col-md-12">
+                                <p>
+                                    <span class="verb">
+                                        {{ api.verb }}
+                                    </span>
+                                    <span class="uri">
+                                        {{ api.uri }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row ml-md-4 ml-1 pl-md-4 pl-1 api-body">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p>{{ api.summary|markdown }}</p>
+                                        <p>{{ api.note|markdown }}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6 class="text">
+                                            URI Parameters
+                                        </h6>
+                                        <ul style="list-style-type:none;">
+                                            {% for arg, desc in
+                                            api.arguments.items() %}
+                                            <li>
+                                                <code>{{ arg }}</code>: {{ desc
+                                                }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6 class="text">
+                                            Returns
+                                        </h6>
+                                        <p>{{ api.returns|markdown }}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6 class="text">
+                                            Example
+                                        </h6>
+                                        <p>
+                                            <a
+                                                href="{{ api.base_uri }}{{ api.uri }}{{ api.example_query_string }}"
+                                                style="font-family: monospace;"
+                                                target="_blank"
+                                                >{{ api.base_uri }}{{ api.uri
+                                                }}{{ api.example_query_string
+                                                }}</a
+                                            >
+                                        </p>
+                                        <ul
+                                            class="nav nav-tabs"
+                                            id="codeTab"
+                                            role="tablist"
+                                        >
+                                            <li class="nav-item">
+                                                <a
+                                                    class="nav-link active"
+                                                    id="curl-tab"
+                                                    data-toggle="tab"
+                                                    href="#curl"
+                                                    role="tab"
+                                                    aria-controls="curl"
+                                                    aria-selected="true"
+                                                    >cURL</a
+                                                >
+                                            </li>
+                                            <li class="nav-item">
+                                                <a
+                                                    class="nav-link"
+                                                    id="python-tab"
+                                                    data-toggle="tab"
+                                                    href="#python"
+                                                    role="tab"
+                                                    aria-controls="python"
+                                                    aria-selected="false"
+                                                    >Python</a
+                                                >
+                                            </li>
+                                            <li class="nav-item">
+                                                <a
+                                                    class="nav-link"
+                                                    id="ruby-tab"
+                                                    data-toggle="tab"
+                                                    href="#ruby"
+                                                    role="tab"
+                                                    aria-controls="ruby"
+                                                    aria-selected="false"
+                                                    >Ruby</a
+                                                >
+                                            </li>
+                                            <li class="nav-item">
+                                                <a
+                                                    class="nav-link"
+                                                    id="r-tab"
+                                                    data-toggle="tab"
+                                                    href="#r"
+                                                    role="tab"
+                                                    aria-controls="r"
+                                                    aria-selected="false"
+                                                    >R</a
+                                                >
+                                            </li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <div
+                                                class="tab-pane active"
+                                                id="curl"
+                                                role="tabpanel"
+                                                aria-labelledby="curl-tab"
+                                            >
+                                                <pre><code class="language-shell">{{ api.curl }}</code></pre>
+                                            </div>
+                                            <div
+                                                class="tab-pane"
+                                                id="python"
+                                                role="tabpanel"
+                                                aria-labelledby="python-tab"
+                                            >
+                                                <pre><code class="language-python">{{ api.py }}</code></pre>
+                                            </div>
+                                            <div
+                                                class="tab-pane"
+                                                id="ruby"
+                                                role="tabpanel"
+                                                aria-labelledby="ruby-tab"
+                                            >
+                                                <pre><code class="language-ruby">{{ api.ruby }}</code></pre>
+                                            </div>
+                                            <div
+                                                class="tab-pane"
+                                                id="r"
+                                                role="tabpanel"
+                                                aria-labelledby="r-tab"
+                                            >
+                                                <pre><code class="language-r">{{ api.r }}</code></pre>
+                                            </div>
+                                        </div>
+                                        <h6 class="text pt-2">
+                                            JSON Response
+                                        </h6>
+                                        <pre><code class="language-javascript">{{ api.example_response }}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %} {% endfor %}
                     </div>
                 </main>
             </div>

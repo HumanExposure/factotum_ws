@@ -160,26 +160,33 @@ def sql_query(query_str, fetch_size="all"):
         sql.close()
 
 
-@app.route("/", methods=["GET"])
-def home(name=None):
-    """Return the webservice index page."""
-    return render_template("index.html", name=name)
-
-
 @app.route("/pucs", methods=["GET"])
 def puc_lookup():
-    """Retreive a list of PUCs and the number of products associate with a DTXSID.
+    """Retrieve a list of PUCs and the number of products associated with a DTXSID.
+
+    API info:
+        verb: GET
+        uri: /pucs
 
     Arguments:
-        `DTXSID???????`
-            a DTXSID where `???????` is a DTXSID number
-        `level = {1,2,default=3}`
-            the level of verbosity.
+        DTXSID???????: a DTXSID where "???????" is a DTXSID number
+        level: the level of verbosity (1-3, default is 3)
+
     Returns:
-        A json object populated with values dictated by the level.
-        1) general_category, num_products
-        2) general_category, product_family, num_products
-        3) general_category, product_family, product_type, description, num_products
+        Returns a list of json objects populated with values dictated by the level.
+
+    Example:
+        query string: ?DTXSID9022528&level=3
+        response:
+            [
+              {
+                "description": "lotions and creams primarily for hands and body",
+                "general_category": "Personal care",
+                "num_products": 1,
+                "product_family": "general moisturizing",
+                "product_type": "hand/body lotion"
+              }
+            ]
 
     """
     try:
@@ -258,3 +265,12 @@ def puc_lookup():
                 }
             )
     return json.jsonify(result_list)
+
+
+@app.route("/", methods=["GET"])
+def home(name=None):
+    """Return the webservice index page."""
+    puc_docs = [ApiDoc(puc_lookup)]
+    docs = {"Product Use Category (PUC)": {"href": "puc", "apis": puc_docs}}
+
+    return render_template("index.html", name=name, docs=docs)
