@@ -8,6 +8,7 @@ import flask
 from flask import json
 from flask import render_template
 from flask import request
+from flaskext.markdown import Markdown
 
 import settings
 
