@@ -84,7 +84,7 @@ class ApiDoc:
             [
                 "library(httr)",
                 "",
-                "respone <- GET('%s')" % api_uri,
+                "response <- GET('%s')" % api_uri,
                 "content(response, 'parsed')",
             ]
         )
