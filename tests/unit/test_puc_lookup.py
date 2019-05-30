@@ -27,7 +27,7 @@ class TestPUCLookup(unittest.TestCase):
 
     def setUp(self):
         """Intialize before each test."""
-        self.dtxsid = "DTXSID9020663"
+        self.dtxsid = "DTXSID6026296"
         self.app = app.app.test_client()
         self.app.testing = True
 

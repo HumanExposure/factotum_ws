@@ -8,11 +8,132 @@ import flask
 from flask import json
 from flask import render_template
 from flask import request
+from flaskext.markdown import Markdown
 
 import settings
 
 app = flask.Flask(__name__)
 app.config.from_object(settings.FlaskConfig)
+md = Markdown(app, extensions=["fenced_code"])
+
+
+class ApiDoc:
+    """A class to parse and hold API docstrings."""
+
+    def __init__(self, func):
+        """Parse and hold API docstrings.
+
+        Arguments:
+            function: a function holding a doctstring
+
+        Properties:
+            summary (str): the API summary
+            note (str): additional information regarding the docstring
+            verb (str): the REST verb
+            uri (str): the API URI
+            arguments (dict): a dictionary of arguments and their descriptions
+            returns (str): a string describing the REST response
+            example_query_string (str): an example query string input
+            example_response (str): an example of the REST response
+            py (str): an example calling the API with Python
+            curl (str): an example calling the API with cURL
+            Ruby (str): an example calling the API with Ruby
+            R (str): an example calling the API with R
+
+        """
+        doc = func.__doc__.splitlines()
+        api_i = self._find_i(doc, "API info:")
+        arg_i = self._find_i(doc, "Arguments:")
+        ret_i = self._find_i(doc, "Returns:")
+        exm_i = self._find_i(doc, "Example:")
+        self.base_uri = (
+            "https://" + app.config["SERVER_NAME"]
+            if app.config["SERVER_NAME"]
+            else "http://localhost:5000"
+        )
+        self.summary = doc[0].strip()
+        self.note = " ".join(doc[1:api_i]).strip()
+        api_dict = self._arg_dict(doc[api_i:arg_i])
+        self.verb = api_dict["verb"]
+        self.uri = api_dict["uri"]
+        self.arguments = self._arg_dict(doc[arg_i:ret_i])
+        self.returns = self._body_str(doc[ret_i:exm_i], formatted=True)
+        exm_dict = self._arg_dict(doc[exm_i:-2], formatted=True)
+        self.example_query_string = exm_dict["query string"]
+        self.example_response = exm_dict["response"]
+        api_uri = self.base_uri + self.uri + self.example_query_string
+        self.py = "\n".join(
+            [
+                ">>> import requests",
+                ">>> r = requests.get('%s')" % api_uri,
+                ">>> r.json()",
+            ]
+        )
+        self.curl = "$ curl '%s'" % api_uri
+        self.ruby = "\n".join(
+            [
+                "require 'net/http'",
+                "require 'json'",
+                "",
+                "uri = URI('%s')" % api_uri,
+                "response = Net::HTTP.get(uri)",
+                "JSON.parse(response)",
+            ]
+        )
+        self.r = "\n".join(
+            [
+                "library(httr)",
+                "",
+                "response <- GET('%s')" % api_uri,
+                "content(response, 'parsed')",
+            ]
+        )
+
+    def _find_i(self, doc, s):
+        """Find the first occurence of a string `s` in an array `doc` of strings."""
+        try:
+            i = next(i for i in range(len(doc)) if s in doc[i])
+        except StopIteration:
+            i = None
+        return i
+
+    def _arg_dict(self, doc, formatted=False):
+        """Return a dictionary of arguments from a array of strings `doc`."""
+        args = {}
+        tab_size = len(doc[0]) - len(doc[0].lstrip())
+        i = 1
+        while i < len(doc):
+            arg = None
+            if doc[i]:
+                arg, desc = [s.strip() for s in doc[i].split(":")]
+            i += 1
+            while (
+                arg
+                and i < len(doc)
+                and (not doc[i] or len(doc[i]) - len(doc[i].lstrip()) - tab_size >= 8)
+            ):
+                if doc[i]:
+                    if desc and not formatted:
+                        desc += " "
+                    desc += (
+                        doc[i][tab_size + 8 :] + "\n" if formatted else doc[i].strip()
+                    )
+                else:
+                    desc += "\n"
+                i += 1
+            if arg:
+                args[arg] = desc.rstrip()
+        return args
+
+    def _body_str(self, doc, formatted=False):
+        """Return a body paragraph of an array `doc` of strings."""
+        tab_size = len(doc[0]) - len(doc[0].lstrip())
+        body = ""
+        for s in doc[1:]:
+            if body and not formatted:
+                body += " "
+            body += s[tab_size + 4 :] + "\n" if formatted else s.strip()
+        return body.rstrip()
 
 
 def sql_query(query_str, fetch_size="all"):
@@ -39,26 +160,33 @@ def sql_query(query_str, fetch_size="all"):
         sql.close()
 
 
-@app.route("/", methods=["GET"])
-def home(name=None):
-    """Return the webservice index page."""
-    return render_template("index.html", name=name)
-
-
 @app.route("/pucs", methods=["GET"])
 def puc_lookup():
-    """Retreive a list of PUCs and the number of products associate with a DTXSID.
+    """Retrieve a list of PUCs and the number of products associated with a DTXSID.
+
+    API info:
+        verb: GET
+        uri: /pucs
 
     Arguments:
-        `DTXSID???????`
-            a DTXSID where `???????` is a DTXSID number
-        `level = {1,2,default=3}`
-            the level of verbosity.
+        DTXSID???????: a DTXSID where "???????" is a DTXSID number
+        level: the level of verbosity (1-3, default is 3)
+
     Returns:
-        A json object populated with values dictated by the level.
-        1) general_category, num_products
-        2) general_category, product_family, num_products
-        3) general_category, product_family, product_type, description, num_products
+        Returns a list of json objects populated with values dictated by the level.
+
+    Example:
+        query string: ?DTXSID9022528&level=3
+        response:
+            [
+              {
+                "description": "lotions and creams primarily for hands and body",
+                "general_category": "Personal care",
+                "num_products": 1,
+                "product_family": "general moisturizing",
+                "product_type": "hand/body lotion"
+              }
+            ]
 
     """
     try:
@@ -137,3 +265,12 @@ def puc_lookup():
                 }
             )
     return json.jsonify(result_list)
+
+
+@app.route("/", methods=["GET"])
+def home(name=None):
+    """Return the webservice index page."""
+    puc_docs = [ApiDoc(puc_lookup)]
+    docs = {"Product Use Category (PUC)": {"href": "puc", "apis": puc_docs}}
+
+    return render_template("index.html", name=name, docs=docs)

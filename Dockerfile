@@ -1,7 +1,7 @@
 # NPM build stage
 # dep at
 #   /node_modules -> /node_modules
-FROM alpine:3.8 AS npmbuild
+FROM alpine:3.9 AS npmbuild
 RUN apk add --no-cache \
         git \
         nodejs \
@@ -14,7 +14,7 @@ RUN npm install
 #   /wheels/dev -> /wheels
 #   /wheels/prod -> /wheels
 #   /wheels/test -> /wheels
-FROM alpine:3.8 AS pybuild
+FROM alpine:3.9 AS pybuild
 RUN apk add --no-cache \
         g++ \
         git \
@@ -37,7 +37,7 @@ RUN pip3 wheel -r /requirements/prod.txt \
  && pip3 install /wheels/prod/*
 
 # Dev
-FROM alpine:3.8 AS dev
+FROM alpine:3.9 AS dev
 RUN apk add --no-cache \
         g++ \
         git \
@@ -47,9 +47,13 @@ RUN apk add --no-cache \
         python3-dev
 WORKDIR /wheels/
 COPY --from=pybuild /wheels/dev/ /wheels/
-RUN pip3 install --no-cache-dir /wheels/* \
+RUN ln -s /usr/bin/python3 /usr/bin/python \
+ && pip3 install --no-cache-dir /wheels/* \
  && rm -rf /wheels
 COPY --from=npmbuild /node_modules /node_modules
+RUN addgroup -g 1000 factotum && \
+    adduser -D -u 1000 -G factotum factotum
+USER 1000
 ENTRYPOINT ["python3", "/app/manage.py"]
 CMD ["runserver"]
 WORKDIR /app
@@ -57,7 +61,7 @@ VOLUME /app
 EXPOSE 5000
 
 # Production
-FROM alpine:3.8 AS prod
+FROM alpine:3.9 AS prod
 RUN apk add --no-cache \
         g++ \
         git \
@@ -66,7 +70,8 @@ RUN apk add --no-cache \
         python3-dev
 WORKDIR /wheels
 COPY --from=pybuild /wheels/prod /wheels
-RUN pip3 install --no-cache-dir /wheels/* \
+RUN ln -s /usr/bin/python3 /usr/bin/python \
+ && pip3 install --no-cache-dir /wheels/* \
  && rm -rf /wheels
 COPY . /app/.
 ENTRYPOINT ["python3", "/app/manage.py"]
