@@ -49,11 +49,11 @@ class TestPUCLookup(unittest.TestCase):
         self.assertTrue(len(data) > 0, "DTXSID did not find any relavant PUCs.")
 
     def test_num_products(self):
-        """Ensure each level returns the same amount of total pucs."""
+        """Ensure each level returns the same amount of total products."""
         sums = {}
         for level in ["1", "2", "3"]:
             response = self.app.get("/pucs?%s&level=%s" % (self.dtxsid, level))
-            data = response.get_json(response)
+            data = response.get_json()["data"]
             acumulator = 0
             for d in data:
                 acumulator += d["num_products"]
@@ -62,4 +62,15 @@ class TestPUCLookup(unittest.TestCase):
         self.assertTrue(
             sums["1"] == sums["2"] and sums["1"] == sums["3"],
             "Levels return different sums of products.",
+        )
+
+    def test_meta_key(self):
+        """Ensure meta key exists in response w/ totalPUCS."""
+        response = self.app.get("/pucs?%s" % (self.dtxsid))
+        data = response.get_json()
+        self.assertTrue("meta" in data.keys(), "Meta should exist in response.")
+        self.assertEqual(
+            data["meta"],
+            {"totalPUCS": 5},
+            ("response should " "include object w/ correct number of totalPUCS."),
         )

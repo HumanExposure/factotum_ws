@@ -240,6 +240,7 @@ def puc_lookup():
         % (selects, dtxsid, selects),
     )
     result_tuple = sql_query(query_str)
+    meta_dict = {"totalPUCS": len(result_tuple)}
     result_list = []
     for result in result_tuple:
         if level == "1":
@@ -264,7 +265,7 @@ def puc_lookup():
                     "num_products": result[4],
                 }
             )
-    return json.jsonify(result_list)
+    return json.jsonify(meta=meta_dict, data=result_list)
 
 
 @app.route("/", methods=["GET"])
