@@ -240,6 +240,8 @@ def puc_lookup():
         % (selects, dtxsid, selects),
     )
     result_tuple = sql_query(query_str)
+    if not result_tuple:
+        return "", 204
     result_list = []
     for result in result_tuple:
         if level == "1":
