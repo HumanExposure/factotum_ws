@@ -36,8 +36,12 @@ class TestPUCLookup(unittest.TestCase):
         pass
 
     def test_status_code(self):
-        """Look for 200 status code."""
+        """Look for 200/204 status code."""
         response = self.app.get("/pucs")
+        self.assertEqual(
+            response.status_code, 204, "Status code must be empty on this URI."
+        )
+        response = self.app.get(f"/pucs?{self.dtxsid}")
         self.assertEqual(
             response.status_code, 200, "Status code must be good on this URI."
         )

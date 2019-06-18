@@ -240,6 +240,8 @@ def puc_lookup():
         % (selects, dtxsid, selects),
     )
     result_tuple = sql_query(query_str)
+    if not result_tuple:
+        return "", 204
     meta_dict = {"totalPUCS": len(result_tuple)}
     result_list = []
     for result in result_tuple:
