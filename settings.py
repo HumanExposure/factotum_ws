@@ -29,6 +29,7 @@ class FlaskConfig(object):
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
     SERVER_NAME = os.getenv("FLASK_SERVER_NAME", None)
     APPLICATION_ROOT = os.getenv("FLASK_APPLICATION_ROOT", "/")
+    PAGE_SIZE = 100
 
 
 class PyMySQLConfig(object):
