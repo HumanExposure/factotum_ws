@@ -9,6 +9,7 @@ from flask import json
 from flask import render_template
 from flask import request
 from flaskext.markdown import Markdown
+from math import ceil
 
 import settings
 
@@ -153,8 +154,10 @@ def sql_query(query_str, page=1, pagesize=app.config["PAGE_SIZE"], fetch_size="a
     start_at = (page - 1) * pagesize
     try:
         with sql.cursor() as cursor:
+            # Inject the SQL_CALC_FOUND_ROWS selector
+            query_str = query_str.replace("SELECT", "SELECT SQL_CALC_FOUND_ROWS ")
             # Append the pagination to the SQL query
-            query_str = f"{query_str} LIMIT {start_at} , {pagesize} ;" 
+            query_str = f"{query_str} LIMIT {start_at} , {pagesize} ;"
             cursor.execute(query_str)
             if fetch_size == "all":
                 result = cursor.fetchall()
@@ -162,9 +165,17 @@ def sql_query(query_str, page=1, pagesize=app.config["PAGE_SIZE"], fetch_size="a
                 result = cursor.fetchone()
             elif fetch_size > 1:
                 result = cursor.fetchmany(size=fetch_size)
-            return result
+
+            # Calculate the total page count based on FOUND_ROWS(),
+            # which disregards the LIMIT
+            cursor.execute("SELECT FOUND_ROWS()")
+            (total_rows,) = cursor.fetchone()
+            pagecount = ceil(total_rows / pagesize)
+
+            return result, pagecount
     finally:
         sql.close()
+    
 
 
 @app.route("/pucs", methods=["GET"])
@@ -198,9 +209,29 @@ def puc_lookup():
             ]
 
     """
-    page = request.args.get('page', 1, type=int)
-    pagesize = request.args.get('pagesize', app.config["PAGE_SIZE"], type=int)
-    paging_dict = {"page": page, "pagesize": pagesize}
+    page = request.args.get("page", 1, type=int)
+    pagesize = request.args.get("pagesize", app.config["PAGE_SIZE"], type=int)
+    nexturl = ""
+    prevurl = None
+    nextpage = 2
+    prevpage = None
+    pagecount = 0
+
+    if page > 1:
+        nextpage = page + 1
+    else:
+        nextpage = 2
+
+    if request.args.get("page"):
+        nexturl = request.url.replace(f"page={page}", f"page={nextpage}")
+        if page == 1:
+            prevurl = None
+        else:
+            prevpage = page - 1
+            prevurl = request.url.replace(f"page={page}", f"page={prevpage}")
+    else:
+        nexturl = f"{request.url}&page={nextpage}"
+        prevurl = None
 
     try:
         dtxsid = next(key for key in request.args.keys() if key[:6] == "DTXSID")
@@ -224,7 +255,7 @@ def puc_lookup():
         r"\s+",
         " ",
         """
-        SELECT
+        SELECT 
                %s,
                COUNT(DISTINCT dashboard_producttopuc.product_id) as num_prod
         FROM   dashboard_dsstoxlookup
@@ -252,7 +283,7 @@ def puc_lookup():
     """
         % (selects, dtxsid, selects),
     )
-    result_tuple = sql_query(query_str, page, pagesize)
+    (result_tuple, pagecount) = sql_query(query_str, page, pagesize)
     if not result_tuple:
         return "", 204
     meta_dict = {"totalPUCS": len(result_tuple)}
@@ -280,6 +311,13 @@ def puc_lookup():
                     "num_products": result[4],
                 }
             )
+    paging_dict = {
+        "page": page,
+        "pagesize": pagesize,
+        "next": nexturl,
+        "previous": prevurl,
+        "pagecount": pagecount
+    }
     return json.jsonify(meta=meta_dict, data=result_list, paging=paging_dict)
 
 
