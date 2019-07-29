@@ -316,7 +316,8 @@ def puc_lookup():
         "pagesize": pagesize,
         "next": nexturl,
         "previous": prevurl,
-        "pagecount": pagecount
+        "pagecount": pagecount,
+        "currentpage": request.url
     }
     return json.jsonify(meta=meta_dict, data=result_list, paging=paging_dict)
 
