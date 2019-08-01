@@ -47,7 +47,7 @@ class PyMySQLConfig(object):
             user=self.USER,
             password=self.PASSWORD,
             database=self.DATABASE,
-            client_flag = pymysql.constants.CLIENT.FOUND_ROWS
+            client_flag=pymysql.constants.CLIENT.FOUND_ROWS,
         )
 
 

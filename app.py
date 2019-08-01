@@ -175,7 +175,6 @@ def sql_query(query_str, page=1, pagesize=app.config["PAGE_SIZE"], fetch_size="a
             return result, pagecount
     finally:
         sql.close()
-    
 
 
 @app.route("/pucs", methods=["GET"])
@@ -255,7 +254,7 @@ def puc_lookup():
         r"\s+",
         " ",
         """
-        SELECT 
+        SELECT
                %s,
                COUNT(DISTINCT dashboard_producttopuc.product_id) as num_prod
         FROM   dashboard_dsstoxlookup
@@ -317,7 +316,7 @@ def puc_lookup():
         "next": nexturl,
         "previous": prevurl,
         "pagecount": pagecount,
-        "currentpage": request.url
+        "currentpage": request.url,
     }
     return json.jsonify(meta=meta_dict, data=result_list, paging=paging_dict)
 
