@@ -9,6 +9,7 @@ from flask import json
 from flask import render_template
 from flask import request
 from flaskext.markdown import Markdown
+from math import ceil
 
 import settings
 
@@ -136,7 +137,7 @@ class ApiDoc:
         return body.rstrip()
 
 
-def sql_query(query_str, fetch_size="all"):
+def sql_query(query_str, page=1, pagesize=app.config["PAGE_SIZE"], fetch_size="all"):
     """Get a SQL datastream.
 
     Arguments:
@@ -144,10 +145,19 @@ def sql_query(query_str, fetch_size="all"):
             a SQL command expressed as a string
         `fetch_size`
             how many records to get. Can be a number or "all"
+        `page`
+            the window of records to return
+        `pagesize`
+            the number of records in each window (assigned in `settings.py`)
     """
     sql = settings.PyMySQLConfig().get_connection()
+    start_at = (page - 1) * pagesize
     try:
         with sql.cursor() as cursor:
+            # Inject the SQL_CALC_FOUND_ROWS selector
+            query_str = query_str.replace("SELECT", "SELECT SQL_CALC_FOUND_ROWS ")
+            # Append the pagination to the SQL query
+            query_str = f"{query_str} LIMIT {start_at} , {pagesize} ;"
             cursor.execute(query_str)
             if fetch_size == "all":
                 result = cursor.fetchall()
@@ -155,7 +165,14 @@ def sql_query(query_str, fetch_size="all"):
                 result = cursor.fetchone()
             elif fetch_size > 1:
                 result = cursor.fetchmany(size=fetch_size)
-            return result
+
+            # Calculate the total page count based on FOUND_ROWS(),
+            # which disregards the LIMIT
+            cursor.execute("SELECT FOUND_ROWS()")
+            (total_rows,) = cursor.fetchone()
+            pagecount = ceil(total_rows / pagesize)
+
+            return result, pagecount
     finally:
         sql.close()
 
@@ -171,6 +188,8 @@ def puc_lookup():
     Arguments:
         DTXSID???????: a DTXSID where "???????" is a DTXSID number
         level: the level of verbosity (1-3, default is 3)
+        page: which page of results to return
+        pagesize: how many results are on each page
 
     Returns:
         Returns a list of json objects populated with values dictated by the level.
@@ -189,6 +208,30 @@ def puc_lookup():
             ]
 
     """
+    page = request.args.get("page", 1, type=int)
+    pagesize = request.args.get("pagesize", app.config["PAGE_SIZE"], type=int)
+    nexturl = ""
+    prevurl = None
+    nextpage = 2
+    prevpage = None
+    pagecount = 0
+
+    if page > 1:
+        nextpage = page + 1
+    else:
+        nextpage = 2
+
+    if request.args.get("page"):
+        nexturl = request.url.replace(f"page={page}", f"page={nextpage}")
+        if page == 1:
+            prevurl = None
+        else:
+            prevpage = page - 1
+            prevurl = request.url.replace(f"page={page}", f"page={prevpage}")
+    else:
+        nexturl = f"{request.url}&page={nextpage}"
+        prevurl = None
+
     try:
         dtxsid = next(key for key in request.args.keys() if key[:6] == "DTXSID")
     except StopIteration:
@@ -239,7 +282,7 @@ def puc_lookup():
     """
         % (selects, dtxsid, selects),
     )
-    result_tuple = sql_query(query_str)
+    (result_tuple, pagecount) = sql_query(query_str, page, pagesize)
     if not result_tuple:
         return "", 204
     meta_dict = {"totalPUCS": len(result_tuple)}
@@ -267,7 +310,15 @@ def puc_lookup():
                     "num_products": result[4],
                 }
             )
-    return json.jsonify(meta=meta_dict, data=result_list)
+    paging_dict = {
+        "page": page,
+        "pagesize": pagesize,
+        "next": nexturl,
+        "previous": prevurl,
+        "pagecount": pagecount,
+        "currentpage": request.url,
+    }
+    return json.jsonify(meta=meta_dict, data=result_list, paging=paging_dict)
 
 
 @app.route("/", methods=["GET"])

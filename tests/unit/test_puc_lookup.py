@@ -52,6 +52,43 @@ class TestPUCLookup(unittest.TestCase):
         data = response.get_json()
         self.assertTrue(len(data) > 0, "DTXSID did not find any relavant PUCs.")
 
+    def test_pagination(self):
+        """Test several combinations of page and pagesize in the URL"""
+        response = self.app.get("/pucs?%s&level=3" % self.dtxsid)
+        r = response.get_json()
+        self.assertTrue(r.get("paging").get("page") == 1, "The page should be 1.")
+        self.assertTrue(
+            r.get("paging").get("pagesize") == 10000,
+            "The pagesize should be 10000, as specified in the settings.",
+        )
+
+        # Page narrowing
+        response = self.app.get("/pucs?%s&level=3&pagesize=3" % self.dtxsid)
+        r = response.get_json()
+        # The length of the data list should match the page size
+        self.assertTrue(
+            len(r.get("data")) == r.get("paging").get("pagesize"),
+            "The data object should be the same length as pagesize.",
+        )
+        self.assertTrue(
+            r.get("paging").get("pagesize") == 3,
+            "The pagesize should be 3, as specified in the request URL.",
+        )
+
+        # Next and previous
+        next_response = self.app.get(r.get("paging").get("next"))
+        next_r = next_response.get_json()
+        self.assertTrue(
+            next_r.get("paging").get("page") == 2, "The page should now be 2."
+        )
+
+        # Page count
+        response = self.app.get("/pucs?%s&level=3&pagesize=1" % self.dtxsid)
+        r = response.get_json()
+        self.assertTrue(
+            next_r.get("paging").get("pagecount") == 2, "The pagecount should be 2."
+        )
+
     def test_num_products(self):
         """Ensure each level returns the same amount of total products."""
         sums = {}
