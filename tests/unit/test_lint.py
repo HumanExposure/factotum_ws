@@ -5,11 +5,6 @@ import subprocess
 import unittest
 
 TOP_DIR = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[1])
-NODE_DIR = (
-    "/node_modules"
-    if os.path.exists("/node_modules")
-    else TOP_DIR + "/requirements/node_modules"
-)
 
 
 class TestLint(unittest.TestCase):
@@ -34,39 +29,3 @@ class TestLint(unittest.TestCase):
             stderr=subprocess.DEVNULL,
         )
         self.assertFalse(out.returncode, "Flake8 shows linting errors.")
-
-    def test_eslint(self):
-        """Ensure all JavaScript files have no ESLint warnings."""
-        out = subprocess.run(
-            [
-                NODE_DIR + "/.bin/eslint",
-                "--ignore-path",
-                TOP_DIR + "/.lintignore",
-                "-c",
-                TOP_DIR + "/.eslintrc",
-                TOP_DIR + "/static/**/*.js",
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        self.assertFalse(out.returncode, "ESLint shows linting errors.")
-
-    def test_prettier(self):
-        """Ensure all web files have been formatted by Prettier."""
-        out = subprocess.run(
-            [
-                NODE_DIR + "/.bin/prettier",
-                "--ignore-path",
-                TOP_DIR + "/.lintignore",
-                "--check",
-                TOP_DIR + "/static/js/**/*.js",
-                TOP_DIR + "/static/css/**/*.css",
-                TOP_DIR + "/static/**/*.html",
-                TOP_DIR + "/templates/**/*.html",
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        self.assertFalse(
-            out.returncode, "Files exists that were not formatted by Prettier."
-        )

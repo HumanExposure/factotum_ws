@@ -44,71 +44,9 @@ def test(args):
 def lint(args):
     """Run linting suite."""
     top_dir = os.path.dirname(os.path.realpath(__file__))
-    node_dir_base = "/node_modules"
-    node_dir = (
-        node_dir_base
-        if os.path.exists(node_dir_base)
-        else top_dir + "/requirements" + node_dir_base
-    )
-    eslint_cmd = (
-        node_dir
-        + "/.bin/eslint --quiet --ignore-path "
-        + top_dir
-        + "/.lintignore -c "
-        + top_dir
-        + "/.eslintrc "
-    )
-    prettier_cmd = (
-        node_dir
-        + "/.bin/prettier --loglevel=error --ignore-path "
-        + top_dir
-        + "/.lintignore "
-    )
-    black_cmd = "black -q "
-    flake8_cmd = "flake8 "
-    if not args.files:
-        args.files = [top_dir]
-    run_cmds = []
-    for file in args.files:
-        if file[0] == "/":
-            corrected_file = file
-        elif file != top_dir:
-            corrected_file = top_dir + "/" + file
-        ext = file.split(".")[-1]
-        is_css = ext == "css"
-        is_js = ext == "js"
-        is_html = ext == "html"
-        is_py = ext == "py"
-        is_top_dir = file == top_dir
-        is_fix = ~args.nofix
-        if not (is_css | is_js | is_js | is_html | is_py | is_top_dir):
-            raise ValueError("Unkown file type: " + corrected_file)
-        if (is_js | is_top_dir) & ~args.skip_web:
-            cmd = eslint_cmd + corrected_file
-            if is_top_dir:
-                cmd += "/static/**/*.js"
-            if is_fix:
-                cmd += " --fix"
-            run_cmds.append(cmd)
-        if (is_js | is_css | is_html | is_top_dir) & is_fix & ~args.skip_web:
-            cmd = prettier_cmd + "--write " + corrected_file
-            if is_top_dir:
-                cmd += (
-                    "/static/**/*.js "
-                    + corrected_file
-                    + "/static/**/*.css "
-                    + corrected_file
-                    + "/templates/**/*.html"
-                )
-            run_cmds.append(cmd)
-        if (is_py | is_top_dir) & is_fix & ~args.skip_python:
-            cmd = black_cmd + corrected_file
-            run_cmds.append(cmd)
-        if (is_py | is_top_dir) & ~args.skip_python:
-            cmd = flake8_cmd + corrected_file
-            run_cmds.append(cmd)
-    for cmd in run_cmds:
-        os.system(cmd)
+    if not args.nofix:
+        os.system("black -q " + top_dir)
+    os.system("flake8 " + top_dir)
 
 
 def runserver(args):
@@ -129,22 +67,6 @@ parser_lint.add_argument(
     const=True,
     default=False,
     help="do not also fix the files",
-)
-parser_lint.add_argument(
-    "--skip-python",
-    "-p",
-    action="store_const",
-    const=True,
-    default=False,
-    help="skip python linting",
-)
-parser_lint.add_argument(
-    "--skip-web",
-    "-w",
-    action="store_const",
-    const=True,
-    default=False,
-    help="skip js/css/html linting",
 )
 parser_lint.add_argument(
     "files", nargs="*", help="a list of files to lint (lint all files if not provided)"
