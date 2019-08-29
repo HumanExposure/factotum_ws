@@ -149,6 +149,7 @@ def sql_query(query_str, page=1, pagesize=app.config["PAGE_SIZE"], fetch_size="a
             the window of records to return
         `pagesize`
             the number of records in each window (assigned in `settings.py`)
+
     """
     sql = settings.PyMySQLConfig().get_connection()
     start_at = (page - 1) * pagesize

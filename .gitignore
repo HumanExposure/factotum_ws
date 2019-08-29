@@ -106,4 +106,4 @@ venv.bak/
 # node modules
 requirements/node_modules/
 node_modules/
-.vscode/settings.json
+.vscode

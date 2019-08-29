@@ -53,7 +53,7 @@ class TestPUCLookup(unittest.TestCase):
         self.assertTrue(len(data) > 0, "DTXSID did not find any relavant PUCs.")
 
     def test_pagination(self):
-        """Test several combinations of page and pagesize in the URL"""
+        """Test several combinations of page and pagesize in the URL."""
         response = self.app.get("/pucs?%s&level=3" % self.dtxsid)
         r = response.get_json()
         self.assertTrue(r.get("paging").get("page") == 1, "The page should be 1.")
