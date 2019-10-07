@@ -5,7 +5,7 @@ from dashboard.models import PUC
 
 class PUCSerializer(serializers.HyperlinkedModelSerializer):
     num_products = serializers.IntegerField(
-        help_text="the total number of distinct products associated with this PUC",
+        help_text="the total number of distinct products associated with this PUC (only visible when a DTXSID is specified)",
         read_only=True,
     )
 
