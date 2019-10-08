@@ -31,6 +31,9 @@ class ChemicalSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
     cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
     qa = serializers.SerializerMethodField(read_only=True)
+    datadocument_id = serializers.IntegerField(
+        source="extracted_text_id", read_only=True
+    )
 
     def get_sid(self, obj) -> str:
         if obj.dsstox is None:
@@ -52,7 +55,19 @@ class ChemicalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.RawChem
-        fields = ["id", "sid", "rid", "name", "cas", "qa"]
+        fields = ["id", "sid", "rid", "name", "cas", "qa", "datadocument_id"]
+
+
+class RIDChemicalSerializer(ChemicalSerializer):
+    class Meta:
+        model = models.RawChem
+        fields = ["rid"]
+
+
+class RIDDocChemicalSerializer(ChemicalSerializer):
+    class Meta:
+        model = models.RawChem
+        fields = ["rid", "datadocument_id"]
 
 
 class DataTypeSerializer(serializers.ModelSerializer):
