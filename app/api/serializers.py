@@ -1,19 +1,25 @@
 from rest_framework import serializers
 
-from dashboard.models import PUC
+from dashboard import models
 
 
-class PUCSerializer(serializers.HyperlinkedModelSerializer):
+class PUCSerializer(serializers.ModelSerializer):
+    puc_name = serializers.SerializerMethodField(
+        read_only=True, help_text="full name of this PUC"
+    )
     num_products = serializers.IntegerField(
-        help_text="the total number of distinct products associated with this PUC (only visible when a DTXSID is specified)",
         read_only=True,
+        help_text="the number of distinct products associated with this PUC",
     )
 
+    def get_puc_name(self, obj) -> str:
+        return ": ".join(n for n in (obj.gen_cat, obj.prod_fam, obj.prod_type) if n)
+
     class Meta:
-        model = PUC
+        model = models.PUC
         fields = [
             "id",
-            "link",
+            "puc_name",
             "gen_cat",
             "prod_fam",
             "prod_type",
@@ -21,3 +27,8 @@ class PUCSerializer(serializers.HyperlinkedModelSerializer):
             "kind",
             "num_products",
         ]
+        extra_kwargs = {
+            "gen_cat": {"help_text": "general category"},
+            "prod_fam": {"help_text": "product family"},
+            "prod_type": {"help_text": "product type"},
+        }

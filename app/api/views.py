@@ -10,5 +10,5 @@ class PUCViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.PUCSerializer
-    queryset = PUC.objects.all()
-    filter_backends = [filters.PUCFilterBackend]
+    queryset = PUC.objects.with_num_products()
+    filterset_class = filters.PUCFilter
