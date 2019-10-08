@@ -93,8 +93,29 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "app.core.pagination.StandardPagination",
     "DEFAULT_PERMISSION_CLASSES": [],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_SCHEMA_CLASS": "app.core.schemas.StandardSchema",
     "PAGE_SIZE": 100,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "URL_FIELD_NAME": "link",
+}
+
+SWAGGER_SETTINGS = {
+    "DEFAULT_AUTO_SCHEMA_CLASS": "app.core.inspectors.StandardAutoSchema",
+    "DEFAULT_FIELD_INSPECTORS": [
+        "app.core.inspectors.NoSchemaTitleInspector",
+        "drf_yasg.inspectors.CamelCaseJSONFilter",
+        "drf_yasg.inspectors.ReferencingSerializerInspector",
+        "drf_yasg.inspectors.RelatedFieldInspector",
+        "drf_yasg.inspectors.ChoiceFieldInspector",
+        "drf_yasg.inspectors.FileFieldInspector",
+        "drf_yasg.inspectors.DictFieldInspector",
+        "drf_yasg.inspectors.JSONFieldInspector",
+        "drf_yasg.inspectors.HiddenFieldInspector",
+        "drf_yasg.inspectors.RecursiveFieldInspector",
+        "drf_yasg.inspectors.SerializerMethodFieldInspector",
+        "drf_yasg.inspectors.SimpleFieldInspector",
+        "drf_yasg.inspectors.StringDefaultFieldInspector",
+    ],
+    "DEFAULT_FILTER_INSPECTORS": ["app.core.inspectors.DjangoFiltersInspector"],
+    "DEFAULT_PAGINATOR_INSPECTORS": ["app.core.inspectors.StandardPaginatorInspector"],
+    "SECURITY_DEFINITIONS": {},
 }
