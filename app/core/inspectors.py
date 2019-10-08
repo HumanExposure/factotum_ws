@@ -207,18 +207,20 @@ class StandardAutoSchema(inspectors.SwaggerAutoSchema):
 class DjangoFiltersInspector(inspectors.FilterInspector):
     def get_filter_parameters(self, filter_backend):
         params = filter_backend.get_schema_operation_parameters(self.view)
-        filter_dict = filter_backend.get_filter_class(self.view).get_filters()
+        filters = filter_backend.get_filter_class(self.view)
         out = []
-        for p in params:
-            name = p.pop("name")
-            in_ = p.pop("in")
-            schema = p.pop("schema")
-            extra = filter_dict[name].extra
-            if "help_text" in extra:
-                p["description"] = extra["help_text"]
-            else:
-                p.pop("description")
-            if "initial" in extra:
-                p["example"] = extra["initial"]
-            out.append(openapi.Parameter(name, in_, type=schema["type"], **p))
+        if filters:
+            filter_dict = filters.get_filters()
+            for p in params:
+                name = p.pop("name")
+                in_ = p.pop("in")
+                schema = p.pop("schema")
+                extra = filter_dict[name].extra
+                if "help_text" in extra:
+                    p["description"] = extra["help_text"]
+                else:
+                    p.pop("description")
+                if "initial" in extra:
+                    p["example"] = extra["initial"]
+                out.append(openapi.Parameter(name, in_, type=schema["type"], **p))
         return out
