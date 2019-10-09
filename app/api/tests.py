@@ -6,7 +6,7 @@ from dashboard.models import PUC
 class TestPUC(TestCase):
     dtxsid = "DTXSID6026296"
 
-    def test_retireve(self):
+    def test_retrieve(self):
         puc = PUC.objects.with_num_products().first()
         response = self.get("/pucs/%d/" % puc.id)
         for key in response:
