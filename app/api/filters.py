@@ -32,7 +32,7 @@ class ProductFilter(filters.FilterSet):
         return queryset.filter(
             datadocument__extractedtext__rawchem__dsstox__sid=value
         ).prefetch_related(
-            Prefetch("puc_set"),
+            Prefetch("puc_set", to_attr="pucs"),
             Prefetch(
                 "datadocument_set__extractedtext__rawchem",
                 queryset=models.RawChem.objects.select_related(
