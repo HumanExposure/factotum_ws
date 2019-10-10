@@ -125,10 +125,10 @@ class ProductSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         source="title", help_text="the name of this product", read_only=True
     )
-    pucs = PUCSerializer(many=True, read_only=True)
+    puc = PUCSerializer(source="uber_puc", read_only=True)
     chemicals = IngredientSerializer(source="rawchems", many=True, read_only=True)
 
     class Meta:
         model = models.Product
-        fields = ["id", "name", "pucs", "chemicals"]
+        fields = ["id", "name", "puc", "chemicals"]
         depth = 1
