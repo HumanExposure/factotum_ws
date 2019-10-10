@@ -12,6 +12,7 @@ class TestPUC(TestCase):
         for key in response:
             if key != "name":
                 self.assertEqual(getattr(puc, key), response[key])
+        self.assertEqual(str(puc), response["name"])
 
     def test_list(self):
         puc = models.PUC.objects.with_num_products().first()
@@ -40,24 +41,22 @@ class TestProduct(TestCase):
     def test_retrieve(self):
         product = models.Product.objects.get(id=1846)
         response = self.get("/products/%d/" % product.id)
-        for key in ("id", "name", "chemicals"):
+        for key in ("id", "name", "puc", "chemicals"):
             self.assertTrue(key in response)
         self.assertEqual(response["id"], product.id)
         self.assertEqual(response["name"], product.title)
         rawchems = [rc for rc in product.rawchems]
         self.assertEqual(len(response["chemicals"]), len(rawchems))
-        chem_reasponse = response["chemicals"][0]
-        chem = next(rc for rc in rawchems if rc.id == chem_reasponse["id"])
+        chem_response = response["chemicals"][0]
+        chem = next(rc for rc in rawchems if rc.id == chem_response["id"])
         if chem.dsstox is not None:
             sid = chem.dsstox.sid
             name = chem.dsstox.true_chemname
             cas = chem.dsstox.true_cas
-            qa = True
         else:
             sid = None
             name = chem.raw_chem_name
             cas = chem.raw_cas
-            qa = False
         try:
             if (
                 chem.ingredient.lower_wf_analysis is None
@@ -75,21 +74,20 @@ class TestProduct(TestCase):
         data_type = chem.extracted_text.data_document.document_type
         source = chem.extracted_text.data_document.data_group.data_source
 
-        self.assertEqual(chem_reasponse["id"], chem.id)
-        self.assertEqual(chem_reasponse["sid"], sid)
-        self.assertEqual(chem_reasponse["rid"], chem.rid)
-        self.assertEqual(chem_reasponse["name"], name)
-        self.assertEqual(chem_reasponse["cas"], cas)
-        self.assertEqual(chem_reasponse["qa"], qa)
-        self.assertEqual(chem_reasponse["min_weight_fraction"], min_weight_fraction)
-        self.assertEqual(chem_reasponse["max_weight_fraction"], max_weight_fraction)
-        self.assertEqual(chem_reasponse["data_type"]["name"], data_type.title)
+        self.assertEqual(chem_response["id"], chem.id)
+        self.assertEqual(chem_response["sid"], sid)
+        self.assertEqual(chem_response["rid"], chem.rid)
+        self.assertEqual(chem_response["name"], name)
+        self.assertEqual(chem_response["cas"], cas)
+        self.assertEqual(chem_response["min_weight_fraction"], min_weight_fraction)
+        self.assertEqual(chem_response["max_weight_fraction"], max_weight_fraction)
+        self.assertEqual(chem_response["data_type"]["name"], data_type.title)
         self.assertEqual(
-            chem_reasponse["data_type"]["description"], data_type.description
+            chem_response["data_type"]["description"], data_type.description
         )
-        self.assertEqual(chem_reasponse["source"]["name"], source.title)
-        self.assertEqual(chem_reasponse["source"]["url"], source.url)
-        self.assertEqual(chem_reasponse["source"]["description"], source.description)
+        self.assertEqual(chem_response["source"]["name"], source.title)
+        self.assertEqual(chem_response["source"]["url"], source.url)
+        self.assertEqual(chem_response["source"]["description"], source.description)
 
     def test_list(self):
         # test without filter
