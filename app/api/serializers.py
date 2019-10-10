@@ -4,16 +4,13 @@ from dashboard import models
 
 
 class PUCSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField(
-        read_only=True, help_text="full name of this PUC"
+    name = serializers.CharField(
+        source="__str__", read_only=True, help_text="full name of this PUC"
     )
     num_products = serializers.IntegerField(
         read_only=True,
         help_text="the number of distinct products associated with this PUC",
     )
-
-    def get_name(self, obj) -> str:
-        return ": ".join(n for n in (obj.gen_cat, obj.prod_fam, obj.prod_type) if n)
 
     class Meta:
         model = models.PUC
