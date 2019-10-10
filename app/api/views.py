@@ -18,7 +18,7 @@ class PUCViewSet(viewsets.ReadOnlyModelViewSet):
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.ProductSerializer
     queryset = models.Product.objects.prefetch_related(
-        Prefetch("puc_set"),
+        Prefetch("puc_set", to_attr="pucs"),
         Prefetch(
             "datadocument_set__extractedtext__rawchem",
             queryset=models.RawChem.objects.select_related(
