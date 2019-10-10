@@ -39,12 +39,13 @@ class TestProduct(TestCase):
     dtxsid = "DTXSID6026296"
 
     def test_retrieve(self):
-        product = models.Product.objects.get(id=1846)
+        product = models.Product.objects.get(id=1867)
         response = self.get("/products/%d/" % product.id)
         for key in ("id", "name", "puc", "chemicals"):
             self.assertTrue(key in response)
         self.assertEqual(response["id"], product.id)
         self.assertEqual(response["name"], product.title)
+        self.assertEqual(response["puc"]["id"], product.uber_puc.id)
         rawchems = [rc for rc in product.rawchems]
         self.assertEqual(len(response["chemicals"]), len(rawchems))
         chem_response = response["chemicals"][0]
