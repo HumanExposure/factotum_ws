@@ -6,7 +6,7 @@ from dashboard import models
 class TestPUC(TestCase):
     dtxsid = "DTXSID6026296"
 
-    def test_retireve(self):
+    def test_retrieve(self):
         puc = models.PUC.objects.with_num_products().first()
         response = self.get("/pucs/%d/" % puc.id)
         for key in response:
@@ -37,7 +37,7 @@ class TestPUC(TestCase):
 class TestProduct(TestCase):
     dtxsid = "DTXSID6026296"
 
-    def test_retireve(self):
+    def test_retrieve(self):
         product = models.Product.objects.get(id=1846)
         response = self.get("/products/%d/" % product.id)
         for key in ("id", "name", "chemicals"):
