@@ -110,7 +110,6 @@ class IngredientSerializer(ChemicalSerializer):
             "rid",
             "name",
             "cas",
-            "qa",
             "min_weight_fraction",
             "max_weight_fraction",
             "data_type",
