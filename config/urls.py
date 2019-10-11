@@ -8,6 +8,7 @@ from app.docs import views as docsviews
 
 router = routers.SimpleRouter()
 router.register(r"pucs", apiviews.PUCViewSet)
+router.register(r"products", apiviews.ProductViewSet)
 
 urlpatterns = [
     path(
