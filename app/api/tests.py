@@ -60,15 +60,15 @@ class TestProduct(TestCase):
             cas = chem.raw_cas
         try:
             if (
-                chem.ingredient.lower_wf_analysis is None
-                and chem.ingredient.upper_wf_analysis is None
+                chem.extractedchemical.lower_wf_analysis is None
+                and chem.extractedchemical.upper_wf_analysis is None
             ):
-                min_weight_fraction = chem.ingredient.central_wf_analysis
-                max_weight_fraction = chem.ingredient.central_wf_analysis
+                min_weight_fraction = chem.extractedchemical.central_wf_analysis
+                max_weight_fraction = chem.extractedchemical.central_wf_analysis
             else:
-                min_weight_fraction = chem.ingredient.lower_wf_analysis
-                max_weight_fraction = chem.ingredient.upper_wf_analysis
-        except models.Ingredient.DoesNotExist:
+                min_weight_fraction = chem.extractedchemical.lower_wf_analysis
+                max_weight_fraction = chem.extractedchemical.upper_wf_analysis
+        except models.ExtractedChemical.DoesNotExist:
             min_weight_fraction = None
             max_weight_fraction = None
 

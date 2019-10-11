@@ -88,20 +88,20 @@ class IngredientSerializer(ChemicalSerializer):
 
     def get_min_weight_fraction(self, obj) -> float:
         try:
-            ing = obj.ingredient
-            if not ing.lower_wf_analysis and not ing.upper_wf_analysis:
-                return ing.central_wf_analysis
-            return ing.lower_wf_analysis
-        except models.Ingredient.DoesNotExist:
+            ec = obj.extractedchemical
+            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
+                return ec.central_wf_analysis
+            return ec.lower_wf_analysis
+        except models.ExtractedChemical.DoesNotExist:
             return None
 
     def get_max_weight_fraction(self, obj) -> float:
         try:
-            ing = obj.ingredient
-            if not ing.lower_wf_analysis and not ing.upper_wf_analysis:
-                return ing.central_wf_analysis
-            return ing.upper_wf_analysis
-        except models.Ingredient.DoesNotExist:
+            ec = obj.extractedchemical
+            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
+                return ec.central_wf_analysis
+            return ec.upper_wf_analysis
+        except models.ExtractedChemical.DoesNotExist:
             return None
 
     class Meta:
