@@ -26,11 +26,9 @@ class PUCSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class ChemicalSerializer(serializers.ModelSerializer):
     sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
-    name = serializers.SerializerMethodField(read_only=True, 
-        help_text="chemical name")
+    name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
     cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
     qa = serializers.SerializerMethodField(read_only=True)
 
@@ -74,15 +72,18 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(ChemicalSerializer):
-    min_weight_fraction = serializers.SerializerMethodField(read_only=True, 
-        help_text="minimum weight fraction")
-    max_weight_fraction = serializers.SerializerMethodField(read_only=True, 
-        help_text="maximum weight fraction")
-    data_type = DataTypeSerializer(source="extracted_text.data_document.document_type", 
-        help_text="data type")
+    min_weight_fraction = serializers.SerializerMethodField(
+        read_only=True, help_text="minimum weight fraction"
+    )
+    max_weight_fraction = serializers.SerializerMethodField(
+        read_only=True, help_text="maximum weight fraction"
+    )
+    data_type = DataTypeSerializer(
+        source="extracted_text.data_document.document_type", help_text="data type"
+    )
     source = DataSourceSerializer(
         source="extracted_text.data_document.data_group.data_source",
-        help_text="data source"
+        help_text="data source",
     )
 
     def get_min_weight_fraction(self, obj) -> float:
@@ -123,8 +124,9 @@ class ProductSerializer(serializers.ModelSerializer):
         source="title", help_text="the name of this product", read_only=True
     )
     puc = PUCSerializer(source="uber_puc", read_only=True, help_text="PUC")
-    chemicals = IngredientSerializer(source="rawchems", many=True, 
-        read_only=True, help_text="chemicals")
+    chemicals = IngredientSerializer(
+        source="rawchems", many=True, read_only=True, help_text="chemicals"
+    )
 
     class Meta:
         model = models.Product
