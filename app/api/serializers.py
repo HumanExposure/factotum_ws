@@ -31,7 +31,9 @@ class ChemicalSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
     cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
     datadocument_id = serializers.IntegerField(
-        source="extracted_text_id", read_only=True
+        source="extracted_text_id",
+        read_only=True,
+        help_text="the ID of the data document where this chemical was found",
     )
 
     def get_sid(self, obj) -> str:
