@@ -36,7 +36,7 @@ class ProductFilter(filters.FilterSet):
             Prefetch(
                 "datadocument_set__extractedtext__rawchem",
                 queryset=models.RawChem.objects.select_related(
-                    "ingredient",
+                    "extractedchemical",
                     "dsstox",
                     "extracted_text__data_document__document_type",
                     "extracted_text__data_document__data_group__data_source",
