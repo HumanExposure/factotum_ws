@@ -1,5 +1,5 @@
 from django.db.models import Prefetch
-from rest_framework import viewsets
+from rest_framework import generics, viewsets
 
 from app.api import filters, serializers
 from dashboard import models
@@ -30,3 +30,21 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         ),
     )
     filterset_class = filters.ProductFilter
+
+
+class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.ChemicalSerializer
+    queryset = models.RawChem.objects.all().order_by("id")
+    filterset_class = filters.ChemicalFilter
+
+
+class RIDChemicalView(generics.ListAPIView):
+    serializer_class = serializers.RIDChemicalSerializer
+    queryset = models.RawChem.objects.all().order_by("id")
+    filterset_class = filters.ChemicalFilter
+
+
+class RIDDocChemicalView(generics.ListAPIView):
+    serializer_class = serializers.RIDDocChemicalSerializer
+    queryset = models.RawChem.objects.all().order_by("id")
+    filterset_class = filters.ChemicalFilter

@@ -47,3 +47,14 @@ class ProductFilter(filters.FilterSet):
     class Meta:
         model = models.Product
         fields = []
+
+
+class ChemicalFilter(filters.FilterSet):
+    puc = filters.NumberFilter(
+        "extracted_text__data_document__product__puc__id",
+        help_text="A `puc_id` to filter chemicals against.",
+    )
+
+    class Meta:
+        model = models.RawChem
+        fields = []
