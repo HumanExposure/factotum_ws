@@ -57,14 +57,20 @@ class TrueChemicalView(generics.ListAPIView):
 
 class TrueChemicalNameView(generics.ListAPIView):
     serializer_class = serializers.TrueChemicalNameSerializer
-    queryset = models.DSSToxLookup.objects.values("true_chemname").distinct()
+    queryset = (
+        models.DSSToxLookup.objects.values("true_chemname")
+        .order_by("true_chemname")
+        .distinct()
+    )
 
 
 class TrueChemicalCasView(generics.ListAPIView):
     serializer_class = serializers.TrueChemicalCasSerializer
-    queryset = models.DSSToxLookup.objects.values("true_cas").distinct()
+    queryset = (
+        models.DSSToxLookup.objects.values("true_cas").order_by("true_cas").distinct()
+    )
 
 
 class TrueChemicalSidView(generics.ListAPIView):
     serializer_class = serializers.TrueChemicalSidSerializer
-    queryset = models.DSSToxLookup.objects.values("sid").distinct()
+    queryset = models.DSSToxLookup.objects.values("sid").order_by("sid").distinct()
