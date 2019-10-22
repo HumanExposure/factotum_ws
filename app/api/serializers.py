@@ -144,4 +144,27 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Product
         fields = ["id", "name", "puc", "chemicals"]
-        depth = 1
+
+
+class TrueChemicalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["id", "sid", "true_cas", "true_chemname"]
+
+
+class TrueChemicalNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["true_chemname"]
+
+
+class TrueChemicalCasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["true_cas"]
+
+
+class TrueChemicalSidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["sid"]

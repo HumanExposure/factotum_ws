@@ -154,3 +154,27 @@ class TestChemical(TestCase):
         self.assertEqual(count, response["meta"]["count"])
         response = self.get("/chemicals/riddoc/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
+
+
+class TestTrueChem(TestCase):
+    def test_list(self):
+        count = models.DSSToxLookup.objects.all().count()
+        response = self.get("/truechemicals/")
+        for key in ("id", "sid", "true_cas", "true_chemname"):
+            self.assertTrue(key in response["data"][0])
+        self.assertEqual(count, response["meta"]["count"])
+        count = models.DSSToxLookup.objects.values("true_chemname").distinct().count()
+        response = self.get("/truechemicals/name/")
+        self.assertTrue("true_chemname" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        self.assertEqual(count, response["meta"]["count"])
+        count = models.DSSToxLookup.objects.values("true_cas").distinct().count()
+        response = self.get("/truechemicals/cas/")
+        self.assertTrue("true_cas" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        self.assertEqual(count, response["meta"]["count"])
+        count = models.DSSToxLookup.objects.values("sid").distinct().count()
+        response = self.get("/truechemicals/name/")
+        self.assertTrue("true_chemname" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        self.assertEqual(count, response["meta"]["count"])
