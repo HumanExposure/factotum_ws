@@ -103,3 +103,54 @@ class TestProduct(TestCase):
         ).count()
         response = self.get("/products/", {"chemical": self.dtxsid})
         self.assertEqual(count, response["meta"]["count"])
+
+
+class TestChemical(TestCase):
+    def test_retireve(self):
+        chem = models.RawChem.objects.first()
+        response = self.get("/chemicals/%d/" % chem.id)
+        if chem.dsstox is not None:
+            sid = chem.dsstox.sid
+            name = chem.dsstox.true_chemname
+            cas = chem.dsstox.true_cas
+        else:
+            sid = None
+            name = chem.raw_chem_name
+            cas = chem.raw_cas
+        self.assertEqual(response["id"], chem.id)
+        self.assertEqual(response["sid"], sid)
+        self.assertEqual(response["rid"], chem.rid)
+        self.assertEqual(response["name"], name)
+        self.assertEqual(response["cas"], cas)
+
+    def test_list(self):
+        # test without filter
+        count = models.RawChem.objects.count()
+        response = self.get("/chemicals/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
+        response = self.get("/chemicals/rid/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
+        self.assertTrue("rid" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        response = self.get("/chemicals/riddoc/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
+        self.assertTrue("rid" in response["data"][0])
+        self.assertTrue("datadocument_id" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 2)
+
+        # test with filter
+        count = models.RawChem.objects.filter(
+            extracted_text__data_document__product__puc__id=1
+        ).count()
+        response = self.get("/chemicals/", {"puc": 1})
+        self.assertEqual(count, response["meta"]["count"])
+        response = self.get("/chemicals/rid/", {"puc": 1})
+        self.assertEqual(count, response["meta"]["count"])
+        response = self.get("/chemicals/riddoc/", {"puc": 1})
+        self.assertEqual(count, response["meta"]["count"])
