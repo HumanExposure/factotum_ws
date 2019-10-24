@@ -4,22 +4,19 @@ from dashboard import models
 
 
 class PUCSerializer(serializers.ModelSerializer):
-    puc_name = serializers.SerializerMethodField(
-        read_only=True, help_text="full name of this PUC"
+    name = serializers.CharField(
+        source="__str__", read_only=True, help_text="full name of this PUC"
     )
     num_products = serializers.IntegerField(
         read_only=True,
         help_text="the number of distinct products associated with this PUC",
     )
 
-    def get_puc_name(self, obj) -> str:
-        return ": ".join(n for n in (obj.gen_cat, obj.prod_fam, obj.prod_type) if n)
-
     class Meta:
         model = models.PUC
         fields = [
             "id",
-            "puc_name",
+            "name",
             "gen_cat",
             "prod_fam",
             "prod_type",
@@ -27,8 +24,111 @@ class PUCSerializer(serializers.ModelSerializer):
             "kind",
             "num_products",
         ]
-        extra_kwargs = {
-            "gen_cat": {"help_text": "general category"},
-            "prod_fam": {"help_text": "product family"},
-            "prod_type": {"help_text": "product type"},
-        }
+
+
+class ChemicalSerializer(serializers.ModelSerializer):
+    sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
+    name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
+    cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
+    qa = serializers.SerializerMethodField(read_only=True)
+
+    def get_sid(self, obj) -> str:
+        if obj.dsstox is None:
+            return None
+        return obj.dsstox.sid
+
+    def get_name(self, obj) -> str:
+        if obj.dsstox is None:
+            return obj.raw_chem_name
+        return obj.dsstox.true_chemname
+
+    def get_cas(self, obj) -> str:
+        if obj.dsstox is None:
+            return obj.raw_cas
+        return obj.dsstox.true_cas
+
+    def get_qa(self, obj) -> bool:
+        return obj.dsstox is not None
+
+    class Meta:
+        model = models.RawChem
+        fields = ["id", "sid", "rid", "name", "cas", "qa"]
+
+
+class DataTypeSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="title")
+
+    class Meta:
+        model = models.DocumentType
+        fields = ["name", "description"]
+
+
+class DataSourceSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="title")
+
+    class Meta:
+        model = models.DataSource
+        fields = ["name", "url", "description"]
+
+
+class IngredientSerializer(ChemicalSerializer):
+    min_weight_fraction = serializers.SerializerMethodField(
+        read_only=True, help_text="minimum weight fraction"
+    )
+    max_weight_fraction = serializers.SerializerMethodField(
+        read_only=True, help_text="maximum weight fraction"
+    )
+    data_type = DataTypeSerializer(
+        source="extracted_text.data_document.document_type", help_text="data type"
+    )
+    source = DataSourceSerializer(
+        source="extracted_text.data_document.data_group.data_source",
+        help_text="data source",
+    )
+
+    def get_min_weight_fraction(self, obj) -> float:
+        try:
+            ec = obj.extractedchemical
+            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
+                return ec.central_wf_analysis
+            return ec.lower_wf_analysis
+        except models.ExtractedChemical.DoesNotExist:
+            return None
+
+    def get_max_weight_fraction(self, obj) -> float:
+        try:
+            ec = obj.extractedchemical
+            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
+                return ec.central_wf_analysis
+            return ec.upper_wf_analysis
+        except models.ExtractedChemical.DoesNotExist:
+            return None
+
+    class Meta:
+        model = models.RawChem
+        fields = [
+            "id",
+            "sid",
+            "rid",
+            "name",
+            "cas",
+            "min_weight_fraction",
+            "max_weight_fraction",
+            "data_type",
+            "source",
+        ]
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(
+        source="title", help_text="the name of this product", read_only=True
+    )
+    puc = PUCSerializer(source="uber_puc", read_only=True, help_text="PUC")
+    chemicals = IngredientSerializer(
+        source="rawchems", many=True, read_only=True, help_text="chemicals"
+    )
+
+    class Meta:
+        model = models.Product
+        fields = ["id", "name", "puc", "chemicals"]
+        depth = 1

@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 from django.test import SimpleTestCase
@@ -13,12 +14,18 @@ class ExamplePagination(StandardPagination):
 
 
 class TestLint(SimpleTestCase):
+
+    lint_dirs = [
+        os.path.join(settings.BASE_DIR, "app"),
+        os.path.join(settings.BASE_DIR, "config"),
+    ]
+
     def test_black(self):
-        cmd = subprocess.run(["black", "--check", "-q", settings.BASE_DIR])
+        cmd = subprocess.run(["black", "--check", "-q"] + self.lint_dirs)
         self.assertEqual(cmd.returncode, 0, "Files not formatted with black.")
 
     def test_pyflakes(self):
-        cmd = subprocess.run(["pyflakes", settings.BASE_DIR])
+        cmd = subprocess.run(["pyflakes"] + self.lint_dirs)
         self.assertEqual(cmd.returncode, 0, "Linting errors found by pyflakes.")
 
 
