@@ -9,7 +9,7 @@ class StandardPagination(PageNumberPagination):
     """The pagination schema to attach to all paginated responses"""
 
     page_size_query_param = "page_size"
-    max_page_size = 10000
+    max_page_size = 500
 
     def get_page_link(self, page_number, url=None):
         """Return a hyperlink to a given page"""

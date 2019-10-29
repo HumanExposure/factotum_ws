@@ -90,6 +90,11 @@ class TestProduct(TestCase):
         self.assertEqual(chem_response["source"]["url"], source.url)
         self.assertEqual(chem_response["source"]["description"], source.description)
 
+    def test_page_size(self):
+        response = self.get("/products/?page_size=666")
+        self.assertTrue("paging" in response)
+        self.assertEqual(500, response["paging"]["size"])
+
     def test_list(self):
         # test without filter
         count = models.Product.objects.count()
