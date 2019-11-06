@@ -90,6 +90,11 @@ class TestProduct(TestCase):
         self.assertEqual(chem_response["source"]["url"], source.url)
         self.assertEqual(chem_response["source"]["description"], source.description)
 
+    def test_page_size(self):
+        response = self.get("/products/?page_size=666")
+        self.assertTrue("paging" in response)
+        self.assertEqual(500, response["paging"]["size"])
+
     def test_list(self):
         # test without filter
         count = models.Product.objects.count()
@@ -102,4 +107,79 @@ class TestProduct(TestCase):
             datadocument__extractedtext__rawchem__dsstox__sid=self.dtxsid
         ).count()
         response = self.get("/products/", {"chemical": self.dtxsid})
+        self.assertEqual(count, response["meta"]["count"])
+
+
+class TestChemical(TestCase):
+    def test_retireve(self):
+        chem = models.RawChem.objects.first()
+        response = self.get("/chemicals/%d/" % chem.id)
+        if chem.dsstox is not None:
+            sid = chem.dsstox.sid
+            name = chem.dsstox.true_chemname
+            cas = chem.dsstox.true_cas
+        else:
+            sid = None
+            name = chem.raw_chem_name
+            cas = chem.raw_cas
+        self.assertEqual(response["id"], chem.id)
+        self.assertEqual(response["sid"], sid)
+        self.assertEqual(response["rid"], chem.rid)
+        self.assertEqual(response["name"], name)
+        self.assertEqual(response["cas"], cas)
+
+    def test_list(self):
+        # test without filter
+        count = models.RawChem.objects.count()
+        response = self.get("/chemicals/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
+        response = self.get("/chemicals/rid/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
+        self.assertTrue("rid" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        response = self.get("/chemicals/riddoc/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
+        self.assertTrue("rid" in response["data"][0])
+        self.assertTrue("datadocument_id" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 2)
+
+        # test with filter
+        count = models.RawChem.objects.filter(
+            extracted_text__data_document__product__puc__id=1
+        ).count()
+        response = self.get("/chemicals/", {"puc": 1})
+        self.assertEqual(count, response["meta"]["count"])
+        response = self.get("/chemicals/rid/", {"puc": 1})
+        self.assertEqual(count, response["meta"]["count"])
+        response = self.get("/chemicals/riddoc/", {"puc": 1})
+        self.assertEqual(count, response["meta"]["count"])
+
+
+class TestTrueChem(TestCase):
+    def test_list(self):
+        count = models.DSSToxLookup.objects.all().count()
+        response = self.get("/truechemicals/")
+        for key in ("id", "sid", "true_cas", "true_chemname"):
+            self.assertTrue(key in response["data"][0])
+        self.assertEqual(count, response["meta"]["count"])
+        count = models.DSSToxLookup.objects.values("true_chemname").distinct().count()
+        response = self.get("/truechemicals/name/")
+        self.assertTrue("true_chemname" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        self.assertEqual(count, response["meta"]["count"])
+        count = models.DSSToxLookup.objects.values("true_cas").distinct().count()
+        response = self.get("/truechemicals/cas/")
+        self.assertTrue("true_cas" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
+        self.assertEqual(count, response["meta"]["count"])
+        count = models.DSSToxLookup.objects.values("sid").distinct().count()
+        response = self.get("/truechemicals/name/")
+        self.assertTrue("true_chemname" in response["data"][0])
+        self.assertEqual(len(response["data"][0]), 1)
         self.assertEqual(count, response["meta"]["count"])

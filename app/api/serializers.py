@@ -30,7 +30,11 @@ class ChemicalSerializer(serializers.ModelSerializer):
     sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
     name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
     cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
-    qa = serializers.SerializerMethodField(read_only=True)
+    datadocument_id = serializers.IntegerField(
+        source="extracted_text_id",
+        read_only=True,
+        help_text="the ID of the data document where this chemical was found",
+    )
 
     def get_sid(self, obj) -> str:
         if obj.dsstox is None:
@@ -47,12 +51,21 @@ class ChemicalSerializer(serializers.ModelSerializer):
             return obj.raw_cas
         return obj.dsstox.true_cas
 
-    def get_qa(self, obj) -> bool:
-        return obj.dsstox is not None
-
     class Meta:
         model = models.RawChem
-        fields = ["id", "sid", "rid", "name", "cas", "qa"]
+        fields = ["id", "sid", "rid", "name", "cas", "datadocument_id"]
+
+
+class RIDChemicalSerializer(ChemicalSerializer):
+    class Meta:
+        model = models.RawChem
+        fields = ["rid"]
+
+
+class RIDDocChemicalSerializer(ChemicalSerializer):
+    class Meta:
+        model = models.RawChem
+        fields = ["rid", "datadocument_id"]
 
 
 class DataTypeSerializer(serializers.ModelSerializer):
@@ -131,4 +144,27 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Product
         fields = ["id", "name", "puc", "chemicals"]
-        depth = 1
+
+
+class TrueChemicalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["id", "sid", "true_cas", "true_chemname"]
+
+
+class TrueChemicalNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["true_chemname"]
+
+
+class TrueChemicalCasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["true_cas"]
+
+
+class TrueChemicalSidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DSSToxLookup
+        fields = ["sid"]
