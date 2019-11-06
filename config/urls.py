@@ -11,6 +11,7 @@ router.register(r"pucs", apiviews.PUCViewSet)
 router.register(r"products", apiviews.ProductViewSet)
 router.register(r"chemicals", apiviews.ChemicalViewSet)
 
+
 urlpatterns = [
     path(
         "openapi/",
