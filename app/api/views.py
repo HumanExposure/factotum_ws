@@ -1,5 +1,6 @@
 from django.db.models import Prefetch
 from rest_framework import generics, viewsets
+
 from app.api import filters, serializers
 from dashboard import models
 
