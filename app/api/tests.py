@@ -41,10 +41,12 @@ class TestProduct(TestCase):
     def test_retrieve(self):
         product = models.Product.objects.get(id=1867)
         response = self.get("/products/%d/" % product.id)
-        for key in ("id", "name", "puc", "chemicals"):
+        for key in ("id", "name", "upc", "documentIDs", "puc", "chemicals"):
             self.assertTrue(key in response)
         self.assertEqual(response["id"], product.id)
         self.assertEqual(response["name"], product.title)
+        self.assertEqual(response["upc"], product.upc)
+        self.assertListEqual(response["documentIDs"], [130169, 147446])
         self.assertEqual(response["puc"]["id"], product.uber_puc.id)
         rawchems = [rc for rc in product.rawchems]
         self.assertEqual(len(response["chemicals"]), len(rawchems))
