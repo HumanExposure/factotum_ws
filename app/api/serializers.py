@@ -138,6 +138,7 @@ class DocumentIdSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.DataDocument
+        fields = "__all__"
 
 
 class ProductSerializer(serializers.ModelSerializer):
