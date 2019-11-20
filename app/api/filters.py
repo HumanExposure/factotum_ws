@@ -44,6 +44,10 @@ class ProductFilter(filters.FilterSet):
             ),
         )
 
+    upc = filters.CharFilter(
+        help_text="A Product UPC to filter products against.", initial="stub_47"
+    )
+
     class Meta:
         model = models.Product
         fields = []

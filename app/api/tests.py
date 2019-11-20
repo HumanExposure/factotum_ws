@@ -37,6 +37,7 @@ class TestPUC(TestCase):
 
 class TestProduct(TestCase):
     dtxsid = "DTXSID6026296"
+    upc = "stub_47"
 
     def test_retrieve(self):
         product = models.Product.objects.get(id=1867)
@@ -104,12 +105,17 @@ class TestProduct(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
-        # test with filter
+        # test with chemical filter
         count = models.Product.objects.filter(
             datadocument__extractedtext__rawchem__dsstox__sid=self.dtxsid
         ).count()
         response = self.get("/products/", {"chemical": self.dtxsid})
         self.assertEqual(count, response["meta"]["count"])
+        # test with UPC filter
+        count = models.Product.objects.filter(upc=self.upc).count()
+        response = self.get("/products/", {"upc": self.upc})
+        self.assertEqual(count, response["meta"]["count"])
+        self.assertEqual(self.upc, response["data"][0]["upc"])
 
 
 class TestChemical(TestCase):
