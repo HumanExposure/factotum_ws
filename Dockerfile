@@ -3,11 +3,7 @@ FROM python:3-alpine
 RUN apk add --no-cache \
         g++ \
         git \
-        libxml2-dev \
-        libxslt-dev \
-        linux-headers \
-        mariadb-dev \
-        python3-dev
+        mariadb-dev
 
 COPY requirements.txt /requirements.txt
 RUN pip3 --no-cache-dir install -r /requirements.txt \
