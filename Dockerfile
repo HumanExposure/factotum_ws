@@ -15,10 +15,11 @@ RUN pip3 --no-cache-dir install -r /requirements.txt \
 
 COPY . /app/.
 WORKDIR /app
-RUN rm -rf static \
- && python3 manage.py collectstatic
+RUN rm -f .env \
+ && rm -rf collected_static \
+ && python manage.py collectstatic
 
-CMD gunicorn config.wsgi -c config/gunicorn.conf --log-config config/logging.conf
+CMD gunicorn config.wsgi -c config/gunicorn.py --log-config config/logging.conf
 
 EXPOSE 8001
-VOLUME /app/static
+VOLUME /app/collected_static
