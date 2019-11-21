@@ -37,14 +37,17 @@ class TestPUC(TestCase):
 
 class TestProduct(TestCase):
     dtxsid = "DTXSID6026296"
+    upc = "stub_47"
 
     def test_retrieve(self):
         product = models.Product.objects.get(id=1867)
         response = self.get("/products/%d/" % product.id)
-        for key in ("id", "name", "puc", "chemicals"):
+        for key in ("id", "name", "upc", "documentIDs", "puc", "chemicals"):
             self.assertTrue(key in response)
         self.assertEqual(response["id"], product.id)
         self.assertEqual(response["name"], product.title)
+        self.assertEqual(response["upc"], product.upc)
+        self.assertListEqual(response["documentIDs"], [130169, 147446])
         self.assertEqual(response["puc"]["id"], product.uber_puc.id)
         rawchems = [rc for rc in product.rawchems]
         self.assertEqual(len(response["chemicals"]), len(rawchems))
@@ -102,12 +105,17 @@ class TestProduct(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
-        # test with filter
+        # test with chemical filter
         count = models.Product.objects.filter(
             datadocument__extractedtext__rawchem__dsstox__sid=self.dtxsid
         ).count()
         response = self.get("/products/", {"chemical": self.dtxsid})
         self.assertEqual(count, response["meta"]["count"])
+        # test with UPC filter
+        count = models.Product.objects.filter(upc=self.upc).count()
+        response = self.get("/products/", {"upc": self.upc})
+        self.assertEqual(count, response["meta"]["count"])
+        self.assertEqual(self.upc, response["data"][0]["upc"])
 
 
 class TestChemical(TestCase):

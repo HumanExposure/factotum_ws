@@ -132,9 +132,25 @@ class IngredientSerializer(ChemicalSerializer):
         ]
 
 
+class DocumentIdSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        return instance.id
+
+    class Meta:
+        model = models.DataDocument
+        fields = "__all__"
+
+
 class ProductSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         source="title", help_text="the name of this product", read_only=True
+    )
+    upc = serializers.CharField(help_text="UPC for this product", read_only=True)
+    documentIDs = DocumentIdSerializer(
+        source="documents",
+        many=True,
+        read_only=True,
+        help_text="Data document IDs associated with this product",
     )
     puc = PUCSerializer(source="uber_puc", read_only=True, help_text="PUC")
     chemicals = IngredientSerializer(
@@ -143,7 +159,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Product
-        fields = ["id", "name", "puc", "chemicals"]
+        fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
 
 
 class TrueChemicalSerializer(serializers.ModelSerializer):
