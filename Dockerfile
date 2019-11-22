@@ -22,4 +22,3 @@ CMD gunicorn config.wsgi -c config/gunicorn.conf --log-config config/logging.con
 
 EXPOSE 8001
 VOLUME /app/static
-

@@ -1,5 +1,7 @@
 from django.db.models import Prefetch
 from rest_framework import generics, viewsets
+
+
 from app.api import filters, serializers
 from dashboard import models
 
@@ -18,6 +20,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.ProductSerializer
     queryset = models.Product.objects.prefetch_related(
         Prefetch("producttopuc_set"),
+        Prefetch("documents", queryset=models.DataDocument.objects.order_by("id")),
         Prefetch(
             "datadocument_set__extractedtext__rawchem",
             queryset=models.RawChem.objects.select_related(
