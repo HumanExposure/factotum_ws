@@ -118,6 +118,7 @@ class TestProduct(TestCase):
         self.assertEqual(self.upc, response["data"][0]["upc"])
 
 
+
 class TestChemical(TestCase):
     def test_retireve(self):
         chem = models.RawChem.objects.first()
