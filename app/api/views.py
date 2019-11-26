@@ -34,6 +34,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
+    lookup_field = "rid"
     serializer_class = serializers.ChemicalSerializer
     queryset = models.RawChem.objects.all().order_by("id")
     filterset_class = filters.ChemicalFilter

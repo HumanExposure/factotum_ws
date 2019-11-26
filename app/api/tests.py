@@ -119,9 +119,9 @@ class TestProduct(TestCase):
 
 
 class TestChemical(TestCase):
-    def test_retireve(self):
-        chem = models.RawChem.objects.first()
-        response = self.get("/chemicals/%d/" % chem.id)
+    def test_retrieve(self):
+        chem = models.RawChem.objects.filter(rid__isnull=False).first()
+        response = self.get("/chemicals/%s/" % chem.rid)
         if chem.dsstox is not None:
             sid = chem.dsstox.sid
             name = chem.dsstox.true_chemname
