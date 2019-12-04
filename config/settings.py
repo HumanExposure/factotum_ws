@@ -1,25 +1,21 @@
+import logging
 import os
 
-import environ
+from config.environment import env
 
-env = environ.Env(
-    DEBUG=bool,
-    SECRET_KEY=str,
-    ALLOWED_HOSTS=list,
-    SQL_DATABASE=str,
-    SQL_USER=str,
-    SQL_PASSWORD=str,
-    SQL_HOST=str,
-    SQL_PORT=int,
-)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-env.read_env(os.path.join(BASE_DIR, ".env"))
+DEBUG = env.DEBUG
+if DEBUG and env.PROD:
+    logger = logging.getLogger("gunicorn.warn")
+    logger.warning("Running in DEBUG mode")
 
-SECRET_KEY = env("SECRET_KEY")
-DEBUG = env("DEBUG")
+SECRET_KEY = env.SECRET_KEY
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.ALLOWED_HOSTS
+if ALLOWED_HOSTS == ["*"] and env.PROD:
+    logger = logging.getLogger("gunicorn.warn")
+    logger.warning("Host checking is disabled (ALLOWED_HOSTS is set to accept all)")
 
 THIRD_PARTY_OVERRIDE_APPS = ["whitenoise.runserver_nostatic"]
 DJANGO_APPS = [
@@ -60,12 +56,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env("SQL_DATABASE"),
-        "USER": env("SQL_USER"),
-        "PASSWORD": env("SQL_PASSWORD"),
-        "HOST": env("SQL_HOST"),
-        "PORT": env("SQL_PORT"),
-        "TEST": {"NAME": "test_" + env("SQL_DATABASE") + "_factotum_ws"},
+        "NAME": env.SQL_DATABASE,
+        "USER": env.SQL_USER,
+        "PASSWORD": env.SQL_PASSWORD,
+        "HOST": env.SQL_HOST,
+        "PORT": env.SQL_PORT,
+        "TEST": {"NAME": "test_" + env.SQL_DATABASE + "_factotum_ws"},
     }
 }
 
@@ -76,14 +72,8 @@ USE_L10N = True
 USE_TZ = False
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 WHITENOISE_AUTOREFRESH = DEBUG
 WHITENOISE_USE_FINDERS = DEBUG
 
