@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-import os
 import sys
+
+from config.environment import env
 
 
 def main():
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError:
@@ -15,7 +16,7 @@ def main():
         )
     from django.core.management.commands.runserver import Command as runserver
 
-    runserver.default_port = "8001"
+    runserver.default_port = env.FACTOTUM_WS_PORT
     execute_from_command_line(sys.argv)
 
 
