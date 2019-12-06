@@ -1,6 +1,7 @@
 from django.db.models import Prefetch
 from rest_framework import generics, viewsets
-
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from app.api import filters, serializers
 from dashboard import models
@@ -49,23 +50,20 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = filters.ChemicalFilter
 
 
-class TrueChemicalView(generics.ListAPIView):
-    serializer_class = serializers.TrueChemicalSerializer
-    queryset = models.DSSToxLookup.objects.all().order_by("id")
+class ChemicalAggregateViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Aggregation queries performed on different fields
+    """
 
+    @action(detail=False)
+    def sid(self, request):
+        queryset = (
+            models.RawChem.objects.filter(dsstox__isnull=False)
+            .values("dsstox__sid")
+            .distinct()
+            .order_by("dsstox__sid")
+        )
 
-class TrueChemicalNameView(generics.ListAPIView):
-    serializer_class = serializers.TrueChemicalNameSerializer
-    queryset = (
-        models.DSSToxLookup.objects.values("true_chemname")
-        .order_by("true_chemname")
-        .distinct()
-    )
-
-
-class TrueChemicalCasView(generics.ListAPIView):
-    serializer_class = serializers.TrueChemicalCasSerializer
-    queryset = (
-        models.DSSToxLookup.objects.values("true_cas").order_by("true_cas").distinct()
-    )
+        serializer = serializers.ChemicalSerializerBySid(queryset, many=True)
+        return Response(serializer.data)
 

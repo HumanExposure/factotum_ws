@@ -156,25 +156,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
 
 
-class TrueChemicalSerializer(serializers.ModelSerializer):
+class ChemicalSerializerBySid(serializers.ModelSerializer):
+    sid = serializers.CharField(
+        source="dsstox__sid", help_text="DTXSID", read_only=True
+    )
+
     class Meta:
-        model = models.DSSToxLookup
-        fields = ["id", "sid", "true_cas", "true_chemname"]
-
-
-class TrueChemicalNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.DSSToxLookup
-        fields = ["true_chemname"]
-
-
-class TrueChemicalCasSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.DSSToxLookup
-        fields = ["true_cas"]
-
-
-class TrueChemicalSidSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.DSSToxLookup
+        model = models.RawChem
         fields = ["sid"]
