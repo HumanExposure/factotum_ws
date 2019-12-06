@@ -55,6 +55,15 @@ class ProductFilter(filters.FilterSet):
 
 
 class ChemicalFilter(filters.FilterSet):
+    """A set of filters that can be applied to the ChemicalSerializer
+    
+    Args:
+        filters ([type]): [description]
+    
+    Returns:
+        [type]: [description]
+    """
+
     puc = filters.NumberFilter(
         "extracted_text__data_document__product__puc__id",
         help_text="A `puc_id` to filter chemicals against.",

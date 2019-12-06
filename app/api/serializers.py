@@ -28,8 +28,14 @@ class PUCSerializer(serializers.ModelSerializer):
 
 class ChemicalSerializer(serializers.ModelSerializer):
     sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
-    name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
-    cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
+    name = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="The true chemical name for curated records, the raw chemical name otherwise",
+    )
+    cas = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="The true CAS for curated records, the raw CAS otherwise",
+    )
     datadocument_id = serializers.IntegerField(
         source="extracted_text_id",
         read_only=True,
@@ -54,18 +60,6 @@ class ChemicalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RawChem
         fields = ["id", "sid", "rid", "name", "cas", "datadocument_id"]
-
-
-class RIDChemicalSerializer(ChemicalSerializer):
-    class Meta:
-        model = models.RawChem
-        fields = ["rid"]
-
-
-class RIDDocChemicalSerializer(ChemicalSerializer):
-    class Meta:
-        model = models.RawChem
-        fields = ["rid", "datadocument_id"]
 
 
 class DataTypeSerializer(serializers.ModelSerializer):

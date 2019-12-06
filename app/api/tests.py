@@ -150,21 +150,12 @@ class TestChemical(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
-        response = self.get("/chemicals/riddoc/")
-        self.assertTrue("paging" in response)
-        self.assertTrue("meta" in response)
-        self.assertEqual(count, response["meta"]["count"])
-        self.assertTrue("rid" in response["data"][0])
-        self.assertTrue("datadocument_id" in response["data"][0])
-        self.assertEqual(len(response["data"][0]), 2)
 
         # test with filter
         count = models.RawChem.objects.filter(
             extracted_text__data_document__product__puc__id=1
         ).count()
         response = self.get("/chemicals/", {"puc": 1})
-        self.assertEqual(count, response["meta"]["count"])
-        response = self.get("/chemicals/riddoc/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
 
 

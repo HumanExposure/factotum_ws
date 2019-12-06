@@ -18,7 +18,6 @@ urlpatterns = [
         docsviews.SchemaView.without_ui(cache_timeout=0),
         name="openapi-schema",
     ),
-    path("chemicals/riddoc/", apiviews.RIDDocChemicalView.as_view()),
     path("truechemicals/", apiviews.TrueChemicalView.as_view()),
     path("truechemicals/name/", apiviews.TrueChemicalNameView.as_view()),
     path("truechemicals/cas/", apiviews.TrueChemicalCasView.as_view()),

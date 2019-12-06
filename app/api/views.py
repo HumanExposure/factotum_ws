@@ -49,12 +49,6 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = filters.ChemicalFilter
 
 
-class RIDDocChemicalView(generics.ListAPIView):
-    serializer_class = serializers.RIDDocChemicalSerializer
-    queryset = models.RawChem.objects.all().order_by("id")
-    filterset_class = filters.ChemicalFilter
-
-
 class TrueChemicalView(generics.ListAPIView):
     serializer_class = serializers.TrueChemicalSerializer
     queryset = models.DSSToxLookup.objects.all().order_by("id")
