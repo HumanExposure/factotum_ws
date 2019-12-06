@@ -19,6 +19,14 @@ urlpatterns = [
         name="openapi-schema",
     ),
     path("chemicals/sid/", apiviews.ChemicalAggregateViewSet.as_view({"get": "sid"})),
+    path(
+        "chemicals/true_cas/",
+        apiviews.ChemicalAggregateViewSet.as_view({"get": "true_cas"}),
+    ),
+    path(
+        "chemicals/true_chemname/",
+        apiviews.ChemicalAggregateViewSet.as_view({"get": "true_chemname"}),
+    ),
     path("", include(router.urls)),
     path("", docsviews.ReDocView.as_view()),
 ]

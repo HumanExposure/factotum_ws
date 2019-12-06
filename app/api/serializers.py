@@ -156,7 +156,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
 
 
-class ChemicalSerializerBySid(serializers.ModelSerializer):
+class ChemicalSidAggSerializer(serializers.ModelSerializer):
     sid = serializers.CharField(
         source="dsstox__sid", help_text="DTXSID", read_only=True
     )
@@ -164,3 +164,23 @@ class ChemicalSerializerBySid(serializers.ModelSerializer):
     class Meta:
         model = models.RawChem
         fields = ["sid"]
+
+
+class ChemicalTrueCasAggSerializer(serializers.ModelSerializer):
+    true_cas = serializers.CharField(
+        source="dsstox__true_cas", help_text="True CAS", read_only=True
+    )
+
+    class Meta:
+        model = models.RawChem
+        fields = ["true_cas"]
+
+
+class ChemicalTrueChemNameAggSerializer(serializers.ModelSerializer):
+    true_chemname = serializers.CharField(
+        source="dsstox__true_chemname", help_text="True chemical name", read_only=True
+    )
+
+    class Meta:
+        model = models.RawChem
+        fields = ["true_chemname"]

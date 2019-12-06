@@ -64,6 +64,29 @@ class ChemicalAggregateViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by("dsstox__sid")
         )
 
-        serializer = serializers.ChemicalSerializerBySid(queryset, many=True)
+        serializer = serializers.ChemicalSidAggSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=False)
+    def true_cas(self, request):
+        queryset = (
+            models.RawChem.objects.filter(dsstox__isnull=False)
+            .values("dsstox__true_cas")
+            .distinct()
+            .order_by("dsstox__true_cas")
+        )
+
+        serializer = serializers.ChemicalTrueCasAggSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def true_chemname(self, request):
+        queryset = (
+            models.RawChem.objects.filter(dsstox__isnull=False)
+            .values("dsstox__true_chemname")
+            .distinct()
+            .order_by("dsstox__true_chemname")
+        )
+
+        serializer = serializers.ChemicalTrueChemNameAggSerializer(queryset, many=True)
+        return Response(serializer.data)
