@@ -58,6 +58,9 @@ class ChemicalFilter(filters.FilterSet):
         "extracted_text__data_document__product__puc__id",
         help_text="A `puc_id` to filter chemicals against.",
     )
+    sid = filters.CharFilter(
+        "dsstox__sid", help_text="A DTXSID to filter curated chemicals against."
+    )
 
     class Meta:
         model = models.RawChem

@@ -162,7 +162,6 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
 
 
-
 class TrueChemicalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DSSToxLookup

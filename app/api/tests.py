@@ -118,7 +118,6 @@ class TestProduct(TestCase):
         self.assertEqual(self.upc, response["data"][0]["upc"])
 
 
-
 class TestChemical(TestCase):
     def test_retrieve(self):
         chem = models.RawChem.objects.filter(rid__isnull=False).first()
@@ -137,6 +136,13 @@ class TestChemical(TestCase):
         self.assertEqual(response["name"], name)
         self.assertEqual(response["cas"], cas)
 
+    def test_retrieve_by_sid(self):
+        sid = "DTXSID6026296"
+        chem_count = models.RawChem.objects.filter(dsstox__sid=sid).count()
+        response = self.get("/chemicals/", {"sid": sid})
+        self.assertEqual(response["paging"]["size"], chem_count)
+        self.assertEqual(response["data"][0]["cas"], "7732-18-5")
+
     def test_list(self):
         # test without filter
         count = models.RawChem.objects.count()
@@ -144,12 +150,6 @@ class TestChemical(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
-        response = self.get("/chemicals/rid/")
-        self.assertTrue("paging" in response)
-        self.assertTrue("meta" in response)
-        self.assertEqual(count, response["meta"]["count"])
-        self.assertTrue("rid" in response["data"][0])
-        self.assertEqual(len(response["data"][0]), 1)
         response = self.get("/chemicals/riddoc/")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
@@ -163,8 +163,6 @@ class TestChemical(TestCase):
             extracted_text__data_document__product__puc__id=1
         ).count()
         response = self.get("/chemicals/", {"puc": 1})
-        self.assertEqual(count, response["meta"]["count"])
-        response = self.get("/chemicals/rid/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
         response = self.get("/chemicals/riddoc/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])

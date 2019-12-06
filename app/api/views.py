@@ -35,14 +35,16 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Returns a list of all the chemical records with any available
+    curated attributes.
+    
+    Args:
+        viewsets ([type]): [description]
+    """
+
     lookup_field = "rid"
     serializer_class = serializers.ChemicalSerializer
-    queryset = models.RawChem.objects.all().order_by("id")
-    filterset_class = filters.ChemicalFilter
-
-
-class RIDChemicalView(generics.ListAPIView):
-    serializer_class = serializers.RIDChemicalSerializer
     queryset = models.RawChem.objects.all().order_by("id")
     filterset_class = filters.ChemicalFilter
 
@@ -73,7 +75,3 @@ class TrueChemicalCasView(generics.ListAPIView):
         models.DSSToxLookup.objects.values("true_cas").order_by("true_cas").distinct()
     )
 
-
-class TrueChemicalSidView(generics.ListAPIView):
-    serializer_class = serializers.TrueChemicalSidSerializer
-    queryset = models.DSSToxLookup.objects.values("sid").order_by("sid").distinct()
