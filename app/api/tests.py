@@ -158,10 +158,19 @@ class TestChemical(TestCase):
         response = self.get("/chemicals/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
 
-    def test_unique_on(self):
-        # test without filter
+    def test_distinct_queries(self):
+        response = self.get("/chemicals/distinct/", {"attribute": "sid"})
+        self.assertEqual(response["data"][0]["sid"], "DTXSID1020273")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
 
-        response = self.get("/chemicals/", {"unique_on": "sid"})
+        response = self.get("/chemicals/distinct/", {"attribute": "true_cas"})
+        self.assertEqual(response["data"][0]["true_cas"], "120-47-8")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+
+        response = self.get("/chemicals/distinct/", {"attribute": "true_chemname"})
+        self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
 
