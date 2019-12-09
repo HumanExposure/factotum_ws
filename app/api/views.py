@@ -37,11 +37,14 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Returns a list of all the chemical records with any available
+    Returns a list of all the chemical records along with any available
     curated attributes.
     
     Args:
-        viewsets ([type]): [description]
+        puc: a PUC ID to select 
+        sid: a curated DSSTOX SID
+        curated: a boolean value indicating wheter to return only curated or only uncurated records 
+        cas: a string that will be matched (exactly) to either the true CAS or the raw CAS
     """
 
     lookup_field = "rid"
@@ -51,42 +54,56 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ChemicalAggregateViewSet(viewsets.ReadOnlyModelViewSet):
+
     """
-    Aggregation queries performed on different fields
+    Returns a list of distinct values in the curated chemicals
     """
 
-    @action(detail=False)
-    def sid(self, request):
-        queryset = (
-            models.RawChem.objects.filter(dsstox__isnull=False)
-            .values("dsstox__sid")
-            .distinct()
-            .order_by("dsstox__sid")
-        )
+    # Unfortunately the class does not have access to the query parameter.
+    # Only the overridden methods do. So the attribute selection is specified twice.
+    def get_serializer_class(self):
+        if self.request.query_params["attribute"].lower() in ("sid"):
+            return serializers.ChemicalTrueCasAggSerializer
+        elif self.request.query_params["attribute"].lower() in ("true_cas"):
+            return serializers.ChemicalTrueCasAggSerializer
+        elif self.request.query_params["attribute"].lower() in (
+            "true_chem_name",
+            "true_chemname",
+        ):
+            return serializers.ChemicalTrueChemNameAggSerializer
+        else:
+            return serializers.ChemicalSerializer
 
-        serializer = serializers.ChemicalSidAggSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        if self.request.query_params["attribute"].lower() == "sid":
+            # SID
+            return (
+                models.RawChem.objects.filter(dsstox__isnull=False)
+                .values("dsstox__sid")
+                .distinct()
+                .order_by("dsstox__sid")
+            )
 
-    @action(detail=False)
-    def true_cas(self, request):
-        queryset = (
-            models.RawChem.objects.filter(dsstox__isnull=False)
-            .values("dsstox__true_cas")
-            .distinct()
-            .order_by("dsstox__true_cas")
-        )
+        elif self.request.query_params["attribute"].lower() == "true_cas":
+            # True CAS
+            return (
+                models.RawChem.objects.filter(dsstox__isnull=False)
+                .values("dsstox__true_cas")
+                .distinct()
+                .order_by("dsstox__true_cas")
+            )
 
-        serializer = serializers.ChemicalTrueCasAggSerializer(queryset, many=True)
-        return Response(serializer.data)
+        elif self.request.query_params["attribute"].lower() in (
+            "true_chem_name",
+            "true_chemname",
+        ):
+            # True chemical name
+            return (
+                models.RawChem.objects.filter(dsstox__isnull=False)
+                .values("dsstox__true_chemname")
+                .distinct()
+                .order_by("dsstox__true_chemname")
+            )
+        else:
+            return models.RawChem.objects.filter(dsstox__isnull=False)
 
-    @action(detail=False)
-    def true_chemname(self, request):
-        queryset = (
-            models.RawChem.objects.filter(dsstox__isnull=False)
-            .values("dsstox__true_chemname")
-            .distinct()
-            .order_by("dsstox__true_chemname")
-        )
-
-        serializer = serializers.ChemicalTrueChemNameAggSerializer(queryset, many=True)
-        return Response(serializer.data)

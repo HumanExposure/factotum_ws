@@ -18,14 +18,11 @@ urlpatterns = [
         docsviews.SchemaView.without_ui(cache_timeout=0),
         name="openapi-schema",
     ),
-    path("chemicals/sid/", apiviews.ChemicalAggregateViewSet.as_view({"get": "sid"})),
+    # These three aggregation endpoints can probably be combined into
+    # a single route with a regex
     path(
-        "chemicals/true_cas/",
-        apiviews.ChemicalAggregateViewSet.as_view({"get": "true_cas"}),
-    ),
-    path(
-        "chemicals/true_chemname/",
-        apiviews.ChemicalAggregateViewSet.as_view({"get": "true_chemname"}),
+        "chemicals/distinct/",
+        apiviews.ChemicalAggregateViewSet.as_view({"get": "list"}),
     ),
     path("", include(router.urls)),
     path("", docsviews.ReDocView.as_view()),
