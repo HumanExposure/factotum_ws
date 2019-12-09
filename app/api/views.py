@@ -66,7 +66,7 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
     # Only the overridden methods do. So the attribute selection is specified twice.
     def get_serializer_class(self):
         if self.request.query_params["attribute"].lower() in ("sid"):
-            return serializers.ChemicalTrueCasAggSerializer
+            return serializers.ChemicalSidAggSerializer
         elif self.request.query_params["attribute"].lower() in ("true_cas"):
             return serializers.ChemicalTrueCasAggSerializer
         elif self.request.query_params["attribute"].lower() in (
