@@ -18,11 +18,9 @@ urlpatterns = [
         docsviews.SchemaView.without_ui(cache_timeout=0),
         name="openapi-schema",
     ),
-    # These three aggregation endpoints can probably be combined into
-    # a single route with a regex
     path(
         "chemicals/distinct/",
-        apiviews.ChemicalAggregateViewSet.as_view({"get": "list"}),
+        apiviews.ChemicalDistinctAttributeViewSet.as_view({"get": "list"}),
     ),
     path("", include(router.urls)),
     path("", docsviews.ReDocView.as_view()),

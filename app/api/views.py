@@ -53,10 +53,13 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = filters.ChemicalFilter
 
 
-class ChemicalAggregateViewSet(viewsets.ReadOnlyModelViewSet):
+class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
-    Returns a list of distinct values in the curated chemicals
+    The /chemicals/distinct/ endpoint returns all curated chemicals unless the 
+    request includes a query param for "attribute", in which case it returns 
+    the distinct values for that attribute. Currently supported attributes
+    are sid, true_cas, and true_chemname
     """
 
     # Unfortunately the class does not have access to the query parameter.
