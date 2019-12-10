@@ -110,10 +110,16 @@ SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {},
 }
 
+LOGGING_CONFIG = None
 logging.config.dictConfig(
     {
         "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "console": {"format": "%(name)-12s %(levelname)-8s %(message)s"}
+        },
         "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "console"},
             "logstash": {
                 "level": "INFO",
                 "class": "logstash.TCPLogstashHandler",
@@ -123,11 +129,11 @@ logging.config.dictConfig(
                 "message_type": "django",  # 'type' field in logstash message. Default value: 'logstash'.
                 "fqdn": False,  # Fully qualified domain name. Default value: false.
                 "tags": ["django.server"],  # list of tags. Default: None.
-            }
+            },
         },
         "loggers": {
             "django.server": {
-                "handlers": ["logstash"],
+                "handlers": ["logstash", "console"],
                 "level": "INFO",
                 "propagate": True,
             }
