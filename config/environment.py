@@ -66,6 +66,11 @@ class MetaEnv(type):
         return cls._get("SQL_PASSWORD", default)
 
     @property
+    def LOGSTASH_PORT(cls):
+        default = "5959"
+        return cls._get("LOGSTASH_PORT", default)
+
+    @property
     def GUNICORN_OPTS(cls):
         default = ""
         return {
