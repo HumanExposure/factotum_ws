@@ -24,7 +24,7 @@ RUN rm -f .env \
  && rm -rf collected_static \
  && python manage.py collectstatic
 
-CMD gunicorn config.wsgi -c config/gunicorn.py --log-config config/logging.conf
+CMD gunicorn config.wsgi -c config/gunicorn.py
 
 EXPOSE 8001
 VOLUME /app/collected_static

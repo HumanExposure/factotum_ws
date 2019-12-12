@@ -2,10 +2,13 @@ import logging
 import multiprocessing
 
 from config.environment import env
+from config.settings import LOGGING
 
 # Default configuration
 bind = ":" + env.FACTOTUM_WS_PORT
 workers = multiprocessing.cpu_count() * 2 + 1
+logconfig_dict = LOGGING
+access_log_format = '"%(r)s" %(s)s %(b)s'
 
 # Override/set any configuration variable with environment variables
 locals().update(env.GUNICORN_OPTS)

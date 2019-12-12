@@ -61,6 +61,11 @@ class MetaEnv(type):
         return cls._get("SQL_PASSWORD", default)
 
     @property
+    def LOGSTASH_HOST(cls):
+        default = "localhost"
+        return cls._get("LOGSTASH_HOST", default)
+
+    @property
     def LOGSTASH_PORT(cls):
         default = "5959"
         return cls._get("LOGSTASH_PORT", default)
