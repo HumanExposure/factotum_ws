@@ -122,7 +122,7 @@ logging.config.dictConfig(
             "console": {"class": "logging.StreamHandler", "formatter": "console"},
             "logstash": {
                 "level": "INFO",
-                "class": "logstash.TCPLogstashHandler",
+                "class": "logstash.UDPLogstashHandler",
                 "host": "localhost",
                 "port": 5959,  # Default value: 5959
                 "version": 1,  # Version of logstash event schema. Default value: 0 (for backward compatibility of the library)
