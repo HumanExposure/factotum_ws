@@ -57,10 +57,9 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
 class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
-    The /chemicals/distinct/ endpoint returns all curated chemicals unless the 
-    request includes a query param for "attribute", in which case it returns 
-    the distinct values for that attribute. Currently supported attributes
-    are sid, true_cas, and true_chemname
+    The /chemicals/distinct/{attribute}/ endpoint returns the distinct 
+    values for {attribute}. Currently supported attributes are sid, true_cas, 
+    and true_chemname
     """
 
     Attr = collections.namedtuple("Attr", "query serializer")
@@ -82,13 +81,9 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
         ),
     }
 
-    # Unfortunately the class does not have access to the query parameter.
-    # Only the overridden methods do. So the attribute selection is specified twice.
     def get_serializer_class(self):
-        print(self.kwargs.get("attribute", ""))
         q = self.kwargs.get("attribute", "")
         attr = self.flds.get(q.lower())
-        print(attr)
         if attr:
             return attr.serializer
         return ChemicalSerializer
@@ -101,4 +96,3 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
             return qs.values(attr.query).distinct().order_by(attr.query)
         else:
             return qs
-

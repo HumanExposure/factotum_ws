@@ -18,7 +18,7 @@ urlpatterns = [
         name="openapi-schema",
     ),
     re_path(
-        r"^chemicals/distinct/(?P<attribute>.+)/$",
+        r"^chemicals/distinct/(?P<attribute>(?i)sid|(?i)true_cas|(?i)true_chem_name|(?i)true_chemname)/$",
         apiviews.ChemicalDistinctAttributeViewSet.as_view({"get": "list"}),
     ),
     path("", include(router.urls)),

@@ -1,6 +1,7 @@
 from app.core.test import TestCase
 
 from dashboard import models
+from django.http import Http404
 
 
 class TestPUC(TestCase):
@@ -159,17 +160,26 @@ class TestChemical(TestCase):
         self.assertEqual(count, response["meta"]["count"])
 
     def test_distinct_queries(self):
-        response = self.get("/chemicals/distinct/", {"attribute": "sid"})
+        response = self.get("/chemicals/distinct/sid/")
         self.assertEqual(response["data"][0]["sid"], "DTXSID1020273")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
 
-        response = self.get("/chemicals/distinct/", {"attribute": "true_cas"})
+        response = self.get("/chemicals/distinct/true_cas/")
         self.assertEqual(response["data"][0]["true_cas"], "120-47-8")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
 
-        response = self.get("/chemicals/distinct/", {"attribute": "true_chemname"})
+        response = self.get("/chemicals/distinct/true_chemname/")
         self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
+
+        # Test case insensitivity
+        response = self.get("/chemicals/distinct/TrUe_ChEmNaMe/")
+        self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
+
+        # Test non-included path
+        self.assertRaises(
+            AttributeError, lambda: self.get("/chemicals/distinct/fake_attribute/")
+        )
