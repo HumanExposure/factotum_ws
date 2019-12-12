@@ -19,7 +19,7 @@ class MetaEnv(type):
 
     @property
     def ALLOWED_HOSTS(cls):
-        default = ""
+        default = "*"
         return [
             host
             for host in cls._get("ALLOWED_HOSTS", default, prefix=True).split(",")
