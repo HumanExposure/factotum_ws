@@ -58,8 +58,16 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
     The /chemicals/distinct/{attribute}/ endpoint returns the distinct 
-    values for {attribute}. Currently supported attributes are sid, true_cas, 
-    and true_chemname
+    values for {attribute}. Currently supported attributes are:
+    
+    - `sid`
+    - `true_cas`
+    - `true_chemname`
+
+    Response schema varies by attribute, but takes the following form:
+    ```
+    "data":[{"attribute_name":"value 1"},{"attribute_name":"value 2"},...
+    ```
     """
 
     Attr = collections.namedtuple("Attr", "query serializer")
