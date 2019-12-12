@@ -173,4 +173,3 @@ class TestChemical(TestCase):
         self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
-

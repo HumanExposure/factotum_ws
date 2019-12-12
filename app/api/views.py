@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from app.api import filters, serializers
 from dashboard import models
+import collections
 
 
 class PUCViewSet(viewsets.ReadOnlyModelViewSet):
@@ -62,51 +63,42 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
     are sid, true_cas, and true_chemname
     """
 
+    Attr = collections.namedtuple("Attr", "query serializer")
+    flds = {
+        "sid": Attr(
+            query="dsstox__sid", serializer=serializers.ChemicalSidAggSerializer
+        ),
+        "true_cas": Attr(
+            query="dsstox__true_cas",
+            serializer=serializers.ChemicalTrueCasAggSerializer,
+        ),
+        "true_chem_name": Attr(
+            query="dsstox__true_chemname",
+            serializer=serializers.ChemicalTrueChemNameAggSerializer,
+        ),
+        "true_chemname": Attr(
+            query="dsstox__true_chemname",
+            serializer=serializers.ChemicalTrueChemNameAggSerializer,
+        ),
+    }
+
     # Unfortunately the class does not have access to the query parameter.
     # Only the overridden methods do. So the attribute selection is specified twice.
     def get_serializer_class(self):
-        if self.request.query_params["attribute"].lower() in ("sid"):
-            return serializers.ChemicalSidAggSerializer
-        elif self.request.query_params["attribute"].lower() in ("true_cas"):
-            return serializers.ChemicalTrueCasAggSerializer
-        elif self.request.query_params["attribute"].lower() in (
-            "true_chem_name",
-            "true_chemname",
-        ):
-            return serializers.ChemicalTrueChemNameAggSerializer
-        else:
-            return serializers.ChemicalSerializer
+        print(self.kwargs.get("attribute", ""))
+        q = self.kwargs.get("attribute", "")
+        attr = self.flds.get(q.lower())
+        print(attr)
+        if attr:
+            return attr.serializer
+        return ChemicalSerializer
 
     def get_queryset(self):
-        if self.request.query_params["attribute"].lower() == "sid":
-            # SID
-            return (
-                models.RawChem.objects.filter(dsstox__isnull=False)
-                .values("dsstox__sid")
-                .distinct()
-                .order_by("dsstox__sid")
-            )
-
-        elif self.request.query_params["attribute"].lower() == "true_cas":
-            # True CAS
-            return (
-                models.RawChem.objects.filter(dsstox__isnull=False)
-                .values("dsstox__true_cas")
-                .distinct()
-                .order_by("dsstox__true_cas")
-            )
-
-        elif self.request.query_params["attribute"].lower() in (
-            "true_chem_name",
-            "true_chemname",
-        ):
-            # True chemical name
-            return (
-                models.RawChem.objects.filter(dsstox__isnull=False)
-                .values("dsstox__true_chemname")
-                .distinct()
-                .order_by("dsstox__true_chemname")
-            )
+        q = self.kwargs.get("attribute", "")
+        attr = self.flds.get(q.lower())
+        qs = models.RawChem.objects.filter(dsstox__isnull=False)
+        if attr:
+            return qs.values(attr.query).distinct().order_by(attr.query)
         else:
-            return models.RawChem.objects.filter(dsstox__isnull=False)
+            return qs
 
