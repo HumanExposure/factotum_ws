@@ -8,13 +8,8 @@ class MetaEnv(type):
     prefix = "FACTOTUM_WS_"
 
     @property
-    def PROD(cls):
-        default = "false"
-        return cls._get("PROD", default, prefix=True) in cls.truevals
-
-    @property
     def DEBUG(cls):
-        default = not cls.PROD
+        default = "true"
         return cls._get("DEBUG", default, prefix=True) in cls.truevals
 
     @property

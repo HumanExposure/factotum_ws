@@ -1,4 +1,3 @@
-import logging
 import os
 
 from config.environment import env
@@ -6,16 +5,8 @@ from config.environment import env
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = env.DEBUG
-if DEBUG and env.PROD:
-    logger = logging.getLogger("gunicorn.warn")
-    logger.warning("Running in DEBUG mode")
-
 SECRET_KEY = env.SECRET_KEY
-
 ALLOWED_HOSTS = env.ALLOWED_HOSTS
-if ALLOWED_HOSTS == ["*"] and env.PROD:
-    logger = logging.getLogger("gunicorn.warn")
-    logger.warning("Host checking is disabled (ALLOWED_HOSTS is set to accept all)")
 
 THIRD_PARTY_OVERRIDE_APPS = ["whitenoise.runserver_nostatic"]
 DJANGO_APPS = [
@@ -50,8 +41,6 @@ TEMPLATES = [
         },
     }
 ]
-
-WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
