@@ -38,8 +38,12 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Returns a list of all the chemical records along with any available
-    curated attributes.
+    Returns chemical records
+
+    list: Returns a list of all the chemical records, filtered by the
+    query parameters, along with any available curated attributes.
+
+    read: Returns a single chemical record specified by an RID
     
     Args:
         puc: a PUC ID to select 
@@ -60,14 +64,24 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
     The /chemicals/distinct/{attribute}/ endpoint returns the distinct 
     values for {attribute}. Currently supported attributes are:
     
-    - `sid`
-    - `true_cas`
-    - `true_chemname`
+    #### sid
+    `/chemicals/distinct/sid/`
+    ```
+    "data":[{"sid":"DTXSID1020273"},{"sid":"DTXSID2021781"}...]
+    ```
 
-    Response schema varies by attribute, but takes the following form:
+    #### true_cas
+    `/chemicals/distinct/true_cas/`
     ```
-    "data":[{"attribute_name":"value 1"},{"attribute_name":"value 2"},...
+    "data":[{"true_cas":"120-47-8"},{"true_cas":"64-17-5"}...]
     ```
+
+    #### true_chemname
+    `/chemicals/distinct/true_chemname/`
+    ```
+    "data":[{"true_chemname":"bisphenol a"},{"true_chemname":"chlorine"}...]
+    ```
+
     """
 
     Attr = collections.namedtuple("Attr", "query serializer")
