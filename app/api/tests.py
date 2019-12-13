@@ -1,7 +1,6 @@
 from app.core.test import TestCase
 
 from dashboard import models
-from django.http import Http404
 
 
 class TestPUC(TestCase):

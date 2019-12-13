@@ -1,7 +1,5 @@
 from django.db.models import Prefetch
-from rest_framework import generics, viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import viewsets
 
 from app.api import filters, serializers
 from dashboard import models
@@ -44,12 +42,14 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     query parameters, along with any available curated attributes.
 
     read: Returns a single chemical record specified by an RID
-    
+
     Args:
-        puc: a PUC ID to select 
+        puc: a PUC ID to select
         sid: a curated DSSTOX SID
-        curated: a boolean value indicating wheter to return only curated or only uncurated records 
-        cas: a string that will be matched (exactly) to either the true CAS or the raw CAS
+        curated: a boolean value indicating wheter to return only curated or
+                only uncurated records
+        cas: a string that will be matched (exactly) to either the true CAS or
+                the raw CAS
     """
 
     lookup_field = "rid"
@@ -61,9 +61,9 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
 class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
-    The /chemicals/distinct/{attribute}/ endpoint returns the distinct 
+    The /chemicals/distinct/{attribute}/ endpoint returns the distinct
     values for {attribute}. Currently supported attributes are:
-    
+
     #### sid
     `/chemicals/distinct/sid/`
     ```
@@ -108,7 +108,7 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
         attr = self.flds.get(q.lower())
         if attr:
             return attr.serializer
-        return ChemicalSerializer
+        return serializers.ChemicalSerializer
 
     def get_queryset(self):
         q = self.kwargs.get("attribute", "")
