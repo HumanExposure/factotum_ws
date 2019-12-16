@@ -8,13 +8,8 @@ class MetaEnv(type):
     prefix = "FACTOTUM_WS_"
 
     @property
-    def PROD(cls):
-        default = "false"
-        return cls._get("PROD", default, prefix=True) in cls.truevals
-
-    @property
     def DEBUG(cls):
-        default = not cls.PROD
+        default = "true"
         return cls._get("DEBUG", default, prefix=True) in cls.truevals
 
     @property
@@ -24,7 +19,7 @@ class MetaEnv(type):
 
     @property
     def ALLOWED_HOSTS(cls):
-        default = ""
+        default = "*"
         return [
             host
             for host in cls._get("ALLOWED_HOSTS", default, prefix=True).split(",")
@@ -64,6 +59,16 @@ class MetaEnv(type):
     def SQL_PASSWORD(cls):
         default = ""
         return cls._get("SQL_PASSWORD", default)
+
+    @property
+    def LOGSTASH_HOST(cls):
+        default = "localhost"
+        return cls._get("LOGSTASH_HOST", default)
+
+    @property
+    def LOGSTASH_PORT(cls):
+        default = "5959"
+        return cls._get("LOGSTASH_PORT", default)
 
     @property
     def GUNICORN_OPTS(cls):

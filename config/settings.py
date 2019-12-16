@@ -1,4 +1,3 @@
-import logging
 import os
 
 from config.environment import env
@@ -6,16 +5,8 @@ from config.environment import env
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = env.DEBUG
-if DEBUG and env.PROD:
-    logger = logging.getLogger("gunicorn.warn")
-    logger.warning("Running in DEBUG mode")
-
 SECRET_KEY = env.SECRET_KEY
-
 ALLOWED_HOSTS = env.ALLOWED_HOSTS
-if ALLOWED_HOSTS == ["*"] and env.PROD:
-    logger = logging.getLogger("gunicorn.warn")
-    logger.warning("Host checking is disabled (ALLOWED_HOSTS is set to accept all)")
 
 THIRD_PARTY_OVERRIDE_APPS = ["whitenoise.runserver_nostatic"]
 DJANGO_APPS = [
@@ -50,8 +41,6 @@ TEMPLATES = [
         },
     }
 ]
-
-WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
@@ -108,4 +97,60 @@ SWAGGER_SETTINGS = {
     "DEFAULT_FILTER_INSPECTORS": ["app.core.inspectors.DjangoFiltersInspector"],
     "DEFAULT_PAGINATOR_INSPECTORS": ["app.core.inspectors.StandardPaginatorInspector"],
     "SECURITY_DEFINITIONS": {},
+}
+
+LOGGING = {
+    "version": 1,
+    "formatters": {
+        "console": {
+            "format": "%(asctime)s [%(levelname)s] %(message)s",
+            "datefmt": "[%d/%b/%Y %H:%M:%S]",
+            "class": "logging.Formatter",
+        },
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] [INFO] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "console",
+        },
+        "django.server": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+        },
+        "logstash": {
+            "level": "INFO",
+            "class": "logstash.UDPLogstashHandler",
+            "host": env.LOGSTASH_HOST,
+            "port": int(env.LOGSTASH_PORT),
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+            "tags": ["factotum_ws", "access"],
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.server": {
+            "handlers": ["logstash", "django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "gunicorn.access": {
+            "level": "INFO",
+            "handlers": ["logstash", "console"],
+            "propagate": False,
+        },
+        "gunicorn.error": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+    },
 }
