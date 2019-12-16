@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework import routers
 
 
@@ -11,19 +11,16 @@ router.register(r"pucs", apiviews.PUCViewSet)
 router.register(r"products", apiviews.ProductViewSet)
 router.register(r"chemicals", apiviews.ChemicalViewSet)
 
-
 urlpatterns = [
     path(
         "openapi/",
         docsviews.SchemaView.without_ui(cache_timeout=0),
         name="openapi-schema",
     ),
-    path("chemicals/rid/", apiviews.RIDChemicalView.as_view()),
-    path("chemicals/riddoc/", apiviews.RIDDocChemicalView.as_view()),
-    path("truechemicals/", apiviews.TrueChemicalView.as_view()),
-    path("truechemicals/name/", apiviews.TrueChemicalNameView.as_view()),
-    path("truechemicals/cas/", apiviews.TrueChemicalCasView.as_view()),
-    path("truechemicals/sid/", apiviews.TrueChemicalSidView.as_view()),
+    re_path(
+        r"^chemicals/distinct/(?P<attribute>(?i)sid|(?i)true_cas|(?i)true_chem_name|(?i)true_chemname)/$",
+        apiviews.ChemicalDistinctAttributeViewSet.as_view({"get": "list"}),
+    ),
     path("", include(router.urls)),
     path("", docsviews.ReDocView.as_view()),
 ]
