@@ -134,26 +134,48 @@ class DocumentIdSerializer(serializers.ModelSerializer):
         model = models.DataDocument
         fields = "__all__"
 
+class PucIdSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        return instance.id
+
+    class Meta:
+        model = models.PUC
+        fields = "__all__"
 
 class ProductSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(
+        help_text="The unique numeric identifier for the product, \
+            used to cross-reference data obtained from other Factotum APIs.")
     name = serializers.CharField(
-        source="title", help_text="the name of this product", read_only=True
+        source="title", help_text="Name of the product.", read_only=True
     )
-    upc = serializers.CharField(help_text="UPC for this product", read_only=True)
-    documentIDs = DocumentIdSerializer(
-        source="documents",
-        many=True,
+    upc = serializers.CharField(help_text="The Universal Product Code, \
+        or unique numeric code used for scanning items at the point-of-sale. \
+            UPC may be represented as 'stub#' if the UPC for the product is \
+            not known.", read_only=True)
+    manufacturer = serializers.CharField(
+        help_text="Manufacturer of the product, if known.",
+    
+    )
+    brand = serializers.CharField(source="brand_name",
+    help_text = "Brand name for the product, if known. May be the same as the manufacturer."
+    )
+    puc_id = PucIdSerializer(
+        source="uber_puc", 
+        read_only=True, 
+        help_text=" Unique numeric identifier for the product use category assigned to the product \
+        (if one has been assigned). Use the PUCs API to obtain additional information on the PUC."
+        )
+    document_id = DocumentIdSerializer(
+        source="documents.first",
         read_only=True,
-        help_text="Data document IDs associated with this product",
-    )
-    puc = PUCSerializer(source="uber_puc", read_only=True, help_text="PUC")
-    chemicals = IngredientSerializer(
-        source="rawchems", many=True, read_only=True, help_text="chemicals"
+        help_text="Unique numeric identifier for the original data document associated with \
+            the product. Use the Documents API to obtain additional information on the document.",
     )
 
     class Meta:
         model = models.Product
-        fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
+        fields = ["id", "name", "upc", "manufacturer", "brand", "puc_id", "document_id"]
 
 
 class ChemicalSidAggSerializer(serializers.ModelSerializer):
