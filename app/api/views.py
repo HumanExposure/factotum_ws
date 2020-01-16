@@ -18,15 +18,12 @@ class PUCViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    list: Service providing a list of all products in ChemExpoDB, along with metadata 
-    describing the product. In ChemExpoDB, a product is defined as an item having a 
-    unique UPC. Thus the same formulation (i.e., same chemical composition) may be 
-    associated with multiple products, each having their own UPC (e.g., different size 
-    bottles of a specific laundry detergent all have the same chemical make-up, but 
+    list: Service providing a list of all products in ChemExpoDB, along with metadata
+    describing the product. In ChemExpoDB, a product is defined as an item having a
+    unique UPC. Thus the same formulation (i.e., same chemical composition) may be
+    associated with multiple products, each having their own UPC (e.g., different size
+    bottles of a specific laundry detergent all have the same chemical make-up, but
     have different UPCs).
-    
-    Args:
-        viewsets ([type]): [description]
     """
 
     serializer_class = serializers.ProductSerializer
