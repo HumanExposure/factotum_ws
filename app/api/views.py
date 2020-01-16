@@ -28,6 +28,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     Args:
         viewsets ([type]): [description]
     """
+
     serializer_class = serializers.ProductSerializer
     queryset = models.Product.objects.prefetch_related(
         Prefetch("producttopuc_set"),

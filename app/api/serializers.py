@@ -134,6 +134,7 @@ class DocumentIdSerializer(serializers.ModelSerializer):
         model = models.DataDocument
         fields = "__all__"
 
+
 class PucIdSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return instance.id
@@ -142,13 +143,14 @@ class PucIdSerializer(serializers.ModelSerializer):
         model = models.PUC
         fields = "__all__"
 
+
 class ProductSerializer(serializers.ModelSerializer):
     puc_id = PucIdSerializer(
-        source="uber_puc", 
-        read_only=True, 
+        source="uber_puc",
+        read_only=True,
         help_text=" Unique numeric identifier for the product use category assigned to the product \
-        (if one has been assigned). Use the PUCs API to obtain additional information on the PUC."
-        )
+        (if one has been assigned). Use the PUCs API to obtain additional information on the PUC.",
+    )
     document_id = DocumentIdSerializer(
         source="documents.first",
         read_only=True,
@@ -168,24 +170,20 @@ class ProductSerializer(serializers.ModelSerializer):
             "name": {
                 "help_text": "Name of the product.",
                 "label": "name",
-                "source": "title"
+                "source": "title",
             },
-            "upc":{
+            "upc": {
                 "help_text": "The Universal Product Code, \
         or unique numeric code used for scanning items at the point-of-sale. \
             UPC may be represented as 'stub#' if the UPC for the product is \
-            not known.",
+            not known."
             },
-            "manufacturer": {
-                "help_text": "Manufacturer of the product, if known.",
-            },
-            "brand":{
+            "manufacturer": {"help_text": "Manufacturer of the product, if known."},
+            "brand": {
                 "source": "brand_name",
                 "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
             },
         }
-            
-
 
 
 class ChemicalSidAggSerializer(serializers.ModelSerializer):

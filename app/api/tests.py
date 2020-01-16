@@ -42,15 +42,21 @@ class TestProduct(TestCase):
     def test_retrieve(self):
         product = models.Product.objects.get(id=1867)
         response = self.get("/products/%d/" % product.id)
-        for key in ("id", "name", "upc", "manufacturer", "brand", "puc_id", "document_id"):
+        for key in (
+            "id",
+            "name",
+            "upc",
+            "manufacturer",
+            "brand",
+            "puc_id",
+            "document_id",
+        ):
             self.assertTrue(key in response)
         self.assertEqual(response["id"], product.id)
         self.assertEqual(response["name"], product.title)
         self.assertEqual(response["upc"], product.upc)
         self.assertEqual(response["document_id"], 130169)
         self.assertEqual(response["puc_id"], product.uber_puc.id)
-        rawchems = [rc for rc in product.rawchems]
-
 
     def test_page_size(self):
         response = self.get("/products/?page_size=35")

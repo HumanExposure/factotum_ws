@@ -172,14 +172,6 @@ class StandardPaginatorInspector(inspectors.DjangoRestResponsePagination):
         ]
 
 
-class NoSchemaTitleInspector(inspectors.FieldInspector):
-    def process_result(self, result, method_name, obj, **kwargs):
-        if isinstance(result, openapi.Schema.OR_REF):
-            schema = openapi.resolve_ref(result, self.components)
-            schema.pop("title", None)
-        return result
-
-
 class StandardAutoSchema(inspectors.SwaggerAutoSchema):
     def get_operation(self, operation_keys=None):
         operation = super().get_operation(operation_keys)
