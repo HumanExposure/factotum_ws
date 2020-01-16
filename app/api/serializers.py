@@ -126,34 +126,18 @@ class IngredientSerializer(ChemicalSerializer):
         ]
 
 
-class DocumentIdSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        return instance.id
-
-    class Meta:
-        model = models.DataDocument
-        fields = "__all__"
-
-
-class PucIdSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        return instance.id
-
-    class Meta:
-        model = models.PUC
-        fields = "__all__"
-
-
 class ProductSerializer(serializers.ModelSerializer):
-    puc_id = PucIdSerializer(
-        source="uber_puc",
+    puc_id = serializers.IntegerField(
+        source="uber_puc.id",
+        default=None,
         read_only=True,
+        allow_null=True,
         label="PUC ID",
         help_text=" Unique numeric identifier for the product use category assigned to the product \
         (if one has been assigned). Use the PUCs API to obtain additional information on the PUC.",
     )
-    document_id = DocumentIdSerializer(
-        source="documents.first",
+    document_id = serializers.IntegerField(
+        source="documents.first.id",
         read_only=True,
         label="Document ID",
         help_text="Unique numeric identifier for the original data document associated with \
