@@ -42,7 +42,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 "extracted_text__data_document__data_group__data_source",
             ),
         ),
-    ).order_by("id")
+    )
     filterset_class = filters.ProductFilter
 
 
