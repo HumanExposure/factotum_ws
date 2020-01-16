@@ -148,12 +148,14 @@ class ProductSerializer(serializers.ModelSerializer):
     puc_id = PucIdSerializer(
         source="uber_puc",
         read_only=True,
+        label="PUC ID",
         help_text=" Unique numeric identifier for the product use category assigned to the product \
         (if one has been assigned). Use the PUCs API to obtain additional information on the PUC.",
     )
     document_id = DocumentIdSerializer(
         source="documents.first",
         read_only=True,
+        label="Document ID",
         help_text="Unique numeric identifier for the original data document associated with \
             the product. Use the Documents API to obtain additional information on the document.",
     )
@@ -163,23 +165,28 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "upc", "manufacturer", "brand", "puc_id", "document_id"]
         extra_kwargs = {
             "id": {
+                "label": "Product ID",
                 "help_text": "The unique numeric identifier for the product, \
             used to cross-reference data obtained from other Factotum APIs.",
-                "label": "ID",
             },
             "name": {
+                "label": "Name",
                 "help_text": "Name of the product.",
-                "label": "name",
                 "source": "title",
             },
             "upc": {
+                "label": "UPC",
                 "help_text": "The Universal Product Code, \
         or unique numeric code used for scanning items at the point-of-sale. \
             UPC may be represented as 'stub#' if the UPC for the product is \
-            not known."
+            not known.",
             },
-            "manufacturer": {"help_text": "Manufacturer of the product, if known."},
+            "manufacturer": {
+                "label": "Manufacturer",
+                "help_text": "Manufacturer of the product, if known.",
+            },
             "brand": {
+                "label": "Brand",
                 "source": "brand_name",
                 "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
             },
