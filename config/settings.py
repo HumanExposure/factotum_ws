@@ -78,9 +78,9 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
+    "DEFAULT_GENERATOR_CLASS": "app.core.generators.StandardSchemaGenerator",
     "DEFAULT_AUTO_SCHEMA_CLASS": "app.core.inspectors.StandardAutoSchema",
     "DEFAULT_FIELD_INSPECTORS": [
-        "app.core.inspectors.NoSchemaTitleInspector",
         "drf_yasg.inspectors.CamelCaseJSONFilter",
         "drf_yasg.inspectors.ReferencingSerializerInspector",
         "drf_yasg.inspectors.RelatedFieldInspector",

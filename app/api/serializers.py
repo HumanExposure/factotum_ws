@@ -126,34 +126,55 @@ class IngredientSerializer(ChemicalSerializer):
         ]
 
 
-class DocumentIdSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        return instance.id
-
-    class Meta:
-        model = models.DataDocument
-        fields = "__all__"
-
-
 class ProductSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        source="title", help_text="the name of this product", read_only=True
-    )
-    upc = serializers.CharField(help_text="UPC for this product", read_only=True)
-    documentIDs = DocumentIdSerializer(
-        source="documents",
-        many=True,
+    puc_id = serializers.IntegerField(
+        source="uber_puc.id",
+        default=None,
         read_only=True,
-        help_text="Data document IDs associated with this product",
+        allow_null=True,
+        label="PUC ID",
+        help_text=" Unique numeric identifier for the product use category assigned to the product \
+        (if one has been assigned). Use the PUCs API to obtain additional information on the PUC.",
     )
-    puc = PUCSerializer(source="uber_puc", read_only=True, help_text="PUC")
-    chemicals = IngredientSerializer(
-        source="rawchems", many=True, read_only=True, help_text="chemicals"
+    document_id = serializers.IntegerField(
+        source="documents.first.id",
+        read_only=True,
+        label="Document ID",
+        help_text="Unique numeric identifier for the original data document associated with \
+            the product. Use the Documents API to obtain additional information on the document.",
     )
 
     class Meta:
         model = models.Product
-        fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
+        fields = ["id", "name", "upc", "manufacturer", "brand", "puc_id", "document_id"]
+        extra_kwargs = {
+            "id": {
+                "label": "Product ID",
+                "help_text": "The unique numeric identifier for the product, \
+            used to cross-reference data obtained from other Factotum APIs.",
+            },
+            "name": {
+                "label": "Name",
+                "help_text": "Name of the product.",
+                "source": "title",
+            },
+            "upc": {
+                "label": "UPC",
+                "help_text": "The Universal Product Code, \
+        or unique numeric code used for scanning items at the point-of-sale. \
+            UPC may be represented as 'stub#' if the UPC for the product is \
+            not known.",
+            },
+            "manufacturer": {
+                "label": "Manufacturer",
+                "help_text": "Manufacturer of the product, if known.",
+            },
+            "brand": {
+                "label": "Brand",
+                "source": "brand_name",
+                "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
+            },
+        }
 
 
 class ChemicalSidAggSerializer(serializers.ModelSerializer):
