@@ -6,33 +6,43 @@ from dashboard import models
 class TestPUC(TestCase):
     dtxsid = "DTXSID6026296"
 
+    def get_source_field(self, key):
+        if key == "level_1_category":
+            return "gen_cat"
+        if key == "level_2_category":
+            return "prod_fam"
+        if key == "level_3_category":
+            return "prod_type"
+        if key == "definition":
+            return "description"
+        return key
+
     def test_retrieve(self):
-        puc = models.PUC.objects.with_num_products().first()
+        puc = models.PUC.objects.all().order_by("id").first()
         response = self.get("/pucs/%d/" % puc.id)
         for key in response:
-            if key != "name":
-                self.assertEqual(getattr(puc, key), response[key])
-        self.assertEqual(str(puc), response["name"])
+            source = self.get_source_field(key)
+            self.assertEqual(getattr(puc, source), response[key])
 
     def test_list(self):
-        puc = models.PUC.objects.with_num_products().first()
-        count = models.PUC.objects.with_num_products().count()
+        puc = models.PUC.objects.all().order_by("id").first()
+        count = models.PUC.objects.all().count()
         # test without filter
         response = self.get("/pucs/")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
         for key in response["data"][0]:
-            if key != "name":
-                self.assertEqual(getattr(puc, key), response["data"][0][key])
+            source = self.get_source_field(key)
+            self.assertEqual(getattr(puc, source), response["data"][0][key])
         # test with filter
-        puc = models.PUC.objects.dtxsid_filter(self.dtxsid).with_num_products().first()
+        puc = models.PUC.objects.dtxsid_filter(self.dtxsid).all().first()
         count = models.PUC.objects.dtxsid_filter(self.dtxsid).count()
         response = self.get("/pucs/", {"chemical": self.dtxsid})
         self.assertEqual(count, response["meta"]["count"])
         for key in response["data"][0]:
-            if key != "name":
-                self.assertEqual(getattr(puc, key), response["data"][0][key])
+            source = self.get_source_field(key)
+            self.assertEqual(getattr(puc, source), response["data"][0][key])
 
 
 class TestProduct(TestCase):

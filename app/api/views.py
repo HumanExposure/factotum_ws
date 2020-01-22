@@ -8,11 +8,15 @@ import collections
 
 class PUCViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    A PUC (Product Usage Category) is a classification of products.
+    list: Service providing a list of all Product Use Categories (PUCs) in ChemExpoDB.
+    The PUCs follow a three-tiered hierarchy (Levels 1-3) for categorizing products.
+    Every combination of Level 1-3 categories is unique, and the combination of Level 1, Level 2,
+    and Level 3 categories together define the PUCs. Additional information on PUCs can be found in
+    <a href="https://www.nature.com/articles/s41370-019-0187-5" target="_blank">Isaacs, 2020</a>.
     """
 
     serializer_class = serializers.PUCSerializer
-    queryset = models.PUC.objects.with_num_products()
+    queryset = models.PUC.objects.all().order_by("id")
     filterset_class = filters.PUCFilter
 
 
