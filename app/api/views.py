@@ -42,6 +42,21 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     )
     filterset_class = filters.ProductFilter
 
+class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    list: Service providing a list of all documents in ChemExpoDB, along with 
+    metadata describing the document. Service also provides the actual data 
+    points found in, and extracted from, the document. e.g., chemicals and their 
+    weight fractions may be included for composition documents.
+    """
+
+    serializer_class = serializers.DocumentSerializer
+    queryset = models.DataDocument.objects.prefetch_related(
+        Prefetch("extractedtext"),
+        Prefetch("products")
+        ).all().order_by("-id")
+    
+
 
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -62,7 +77,7 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     lookup_field = "rid"
-    serializer_class = serializers.ChemicalSerializer
+    serializer_class = serializers.RawChemSerializer
     queryset = models.RawChem.objects.all().order_by("id")
     filterset_class = filters.ChemicalFilter
 

@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from dashboard import models
 
 
@@ -26,7 +25,8 @@ class PUCSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChemicalSerializer(serializers.ModelSerializer):
+class RawChemSerializer(serializers.ModelSerializer):
+    
     sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
     name = serializers.SerializerMethodField(
         read_only=True,
@@ -36,12 +36,14 @@ class ChemicalSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text="The true CAS for curated records, the raw CAS otherwise",
     )
-    datadocument_id = serializers.IntegerField(
-        source="extracted_text_id",
+    component = serializers.CharField(
         read_only=True,
-        help_text="the ID of the data document where this chemical was found",
+        help_text="Subcategory grouping chemical information on the document \
+                    (may or may not be populated). Used when the document provides \
+                    information on chemical make-up of multiple components or portions \
+                    of a product (e.g. a hair care set (product) which contains a bottle of \
+                    shampoo (component 1) and bottle of body wash (component 2))",
     )
-
     def get_sid(self, obj) -> str:
         if obj.dsstox is None:
             return None
@@ -56,41 +58,19 @@ class ChemicalSerializer(serializers.ModelSerializer):
         if obj.dsstox is None:
             return obj.raw_cas
         return obj.dsstox.true_cas
-
     class Meta:
         model = models.RawChem
-        fields = ["id", "sid", "rid", "name", "cas", "datadocument_id"]
+        fields = ["id", "sid", "rid", "name", "cas", "component"]
+    
 
-
-class DataTypeSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="title")
-
-    class Meta:
-        model = models.DocumentType
-        fields = ["name", "description"]
-
-
-class DataSourceSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="title")
-
-    class Meta:
-        model = models.DataSource
-        fields = ["name", "url", "description"]
-
-
-class IngredientSerializer(ChemicalSerializer):
+class ExtractedChemicalSerializer(RawChemSerializer):
+    """Inherits from RawChemSerializer
+    """
     min_weight_fraction = serializers.SerializerMethodField(
         read_only=True, help_text="minimum weight fraction"
     )
     max_weight_fraction = serializers.SerializerMethodField(
         read_only=True, help_text="maximum weight fraction"
-    )
-    data_type = DataTypeSerializer(
-        source="extracted_text.data_document.document_type", help_text="data type"
-    )
-    source = DataSourceSerializer(
-        source="extracted_text.data_document.data_group.data_source",
-        help_text="data source",
     )
 
     def get_min_weight_fraction(self, obj) -> float:
@@ -112,18 +92,33 @@ class IngredientSerializer(ChemicalSerializer):
             return None
 
     class Meta:
-        model = models.RawChem
-        fields = [
-            "id",
-            "sid",
-            "rid",
-            "name",
-            "cas",
-            "min_weight_fraction",
-            "max_weight_fraction",
-            "data_type",
-            "source",
-        ]
+            model = models.RawChem
+            fields = [
+                "id",
+                "sid",
+                "rid",
+                "name",
+                "cas",
+                "min_weight_fraction",
+                "max_weight_fraction",
+                "component"
+            ]
+
+
+class DataTypeSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="title")
+
+    class Meta:
+        model = models.DocumentType
+        fields = ["name", "description"]
+
+
+class DataSourceSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="title")
+
+    class Meta:
+        model = models.DataSource
+        fields = ["name", "url", "description"]
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -173,6 +168,86 @@ class ProductSerializer(serializers.ModelSerializer):
                 "label": "Brand",
                 "source": "brand_name",
                 "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
+            },
+        }
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    date = serializers.ReadOnlyField(
+        source="extractedtext__doc_date",
+        default=None,
+        read_only=True,
+        allow_null=True,
+        label="Date",
+        help_text="Publication date for the document.",
+    )
+    type = serializers.CharField(
+        source="data_group__group_type__title",
+        read_only=True,
+        allow_null=False,
+        label="Document type",
+        help_text="Type of data provided by the document, e.g. 'Composition' \
+            indicates the document provides data on chemical composition of a consumer product.",
+    )
+
+    url = serializers.URLField(
+        source="pdf_url",
+        read_only=True,
+        allow_null=True,
+        label="URL",
+        help_text="Link to a locally stored copy of the document.",
+    )
+    products = serializers.PrimaryKeyRelatedField(
+        many=True, 
+        read_only=True,
+        label="ProductIDs",
+        help_text="Unique numeric identifiers for products associated with the \
+             original data document. May be >1 product associated with each document. \
+             See the Products API for additional information on the product.",
+        )
+
+    chemicals = ExtractedChemicalSerializer(
+        source="extractedtext.rawchem.select_subclasses()",
+        many=True,
+        read_only=True,
+        label="chemicals",
+        help_text="TBD",
+    )
+
+    class Meta:
+        model = models.DataDocument
+        fields = [
+            "id",
+            "title",
+            "subtitle",
+            "organization",
+            "date",
+            "type",
+            "url",
+            "notes",
+            "products",
+            "chemicals",
+        ]
+        extra_kwargs = {
+            "id": {
+                "label": "Document ID",
+                "help_text": "The unique numeric identifier for the original data document providing data to ChemExpoDB.",
+            },
+            "title": {"label": "Title", "help_text": "Title of the document."},
+            "subtitle": {
+                "label": "Subtitle",
+                "help_text": "Subtitle for the document. \
+                May also be the heading/caption for the table from which data was extracted.",
+            },
+            "organization": {
+                "label": "Organization",
+                "help_text": "The organization which published the document. If the document is \
+                    a peer-reviewed journal article, the name of the journal.",
+            },
+            "notes": {
+                "label": "Notes",
+                "source": "note",
+                "help_text": "General notes about the data document, written by ChemExpoDB data curators.",
             },
         }
 
