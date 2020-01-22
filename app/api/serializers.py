@@ -26,7 +26,7 @@ class PUCSerializer(serializers.ModelSerializer):
 
 
 class RawChemSerializer(serializers.ModelSerializer):
-    
+
     sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
     name = serializers.SerializerMethodField(
         read_only=True,
@@ -44,6 +44,7 @@ class RawChemSerializer(serializers.ModelSerializer):
                     of a product (e.g. a hair care set (product) which contains a bottle of \
                     shampoo (component 1) and bottle of body wash (component 2))",
     )
+
     def get_sid(self, obj) -> str:
         if obj.dsstox is None:
             return None
@@ -58,20 +59,22 @@ class RawChemSerializer(serializers.ModelSerializer):
         if obj.dsstox is None:
             return obj.raw_cas
         return obj.dsstox.true_cas
+
     class Meta:
         model = models.RawChem
         fields = ["id", "sid", "rid", "name", "cas", "component"]
-    
+
 
 class ExtractedChemicalSerializer(RawChemSerializer):
     """Inherits from RawChemSerializer
     """
-    min_weight_fraction = serializers.SerializerMethodField(
-        read_only=True, help_text="minimum weight fraction"
-    )
-    max_weight_fraction = serializers.SerializerMethodField(
-        read_only=True, help_text="maximum weight fraction"
-    )
+
+    # min_weight_fraction = serializers.SerializerMethodField(
+    #     read_only=True, help_text="minimum weight fraction"
+    # )
+    # max_weight_fraction = serializers.SerializerMethodField(
+    #     read_only=True, help_text="maximum weight fraction"
+    # )
 
     def get_min_weight_fraction(self, obj) -> float:
         try:
@@ -92,17 +95,17 @@ class ExtractedChemicalSerializer(RawChemSerializer):
             return None
 
     class Meta:
-            model = models.RawChem
-            fields = [
-                "id",
-                "sid",
-                "rid",
-                "name",
-                "cas",
-                "min_weight_fraction",
-                "max_weight_fraction",
-                "component"
-            ]
+        model = models.ExtractedChemical
+        fields = [
+            "component",
+            "sid",
+            # "min_weight_fraction",
+            # "max_weight_fraction",
+            "lower_wf_analysis",
+            "central_wf_analysis",
+            "upper_wf_analysis",
+            "ingredient_rank",
+        ]
 
 
 class DataTypeSerializer(serializers.ModelSerializer):
@@ -198,22 +201,48 @@ class DocumentSerializer(serializers.ModelSerializer):
         help_text="Link to a locally stored copy of the document.",
     )
     products = serializers.PrimaryKeyRelatedField(
-        many=True, 
+        many=True,
         read_only=True,
         label="ProductIDs",
         help_text="Unique numeric identifiers for products associated with the \
              original data document. May be >1 product associated with each document. \
              See the Products API for additional information on the product.",
-        )
+    )
 
-    chemicals = serializers.SerializerMethodField()
+    chemicals = serializers.SerializerMethodField(
+        help_text="""A collection of extracted chemicals related to the document. \
+        The chemical attributes include:<br>
+        *Component `component`:* Subcategory grouping chemical information on the document (may or \
+            may not be populated). Used when the document provides information on chemical \
+                make-up of multiple components or portions of a product (e.g. a hair care \
+                    set (product) which contains a bottle of shampoo (component 1) and \
+                        bottle of body wash (component 2))<br>
+        *DTXSID `sid`:* The DSSTox Substance Identifier for each chemical included on the document. \
+            May be >1 per document. See the chemicals API for additional information on the \
+                chemical substance.<br>
+        *Weight fraction - lower `lower_wf_analysis`:* Lower bound of weight fraction for the chemical substance \
+            in the product, if provided on the document. If weight fraction is provided as a \
+            range, lower and upper values are populated. Values range from 0-1.<br>
+        *Weight fraction - central `central_wf_analysis`:* Central value for weight fraction for the chemical substance \
+            in the product, if provided on the document. If weight fraction is provided as a \
+            point estimate, the central value is populated. Values range from 0-1.<br>
+        *Weight fraction - upper `upper_wf_analysis`:* Upper bound of weight fraction for the chemical substance \
+            in the product, if provided on the document. If weight fraction is provided as a range, \
+                lower and upper values are populated. Values range from 0-1.<br>
+        *Ingredient rank `ingredient_rank`:* Rank of the chemical in the ingredient list or document.
+            """,
+        label="Chemicals",
+        read_only=True,
+    )
 
     def get_chemicals(self, obj):
         return ExtractedChemicalSerializer(
-                    obj.extractedtext.rawchem.select_subclasses("extractedchemical"),
-                    many=True
-                ).data
-    
+            obj.extractedtext.rawchem.select_subclasses("extractedchemical").order_by(
+                "component"
+            ),  # not possible to sort by ingredient_rank, since the subclass is undetermined
+            many=True,
+        ).data
+
     class Meta:
         model = models.DataDocument
         fields = [
