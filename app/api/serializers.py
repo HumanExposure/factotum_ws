@@ -4,26 +4,49 @@ from dashboard import models
 
 
 class PUCSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        source="__str__", read_only=True, help_text="full name of this PUC"
-    )
-    num_products = serializers.IntegerField(
-        read_only=True,
-        help_text="the number of distinct products associated with this PUC",
-    )
-
     class Meta:
         model = models.PUC
         fields = [
             "id",
-            "name",
-            "gen_cat",
-            "prod_fam",
-            "prod_type",
-            "description",
+            "level_1_category",
+            "level_2_category",
+            "level_3_category",
+            "definition",
             "kind",
-            "num_products",
         ]
+        extra_kwargs = {
+            "id": {
+                "help_text": "The unique numeric identifier for the PUC, \
+                    used to cross-reference data obtained from other Factotum APIs,",
+                "label": "PUC ID",
+            },
+            "level_1_category": {
+                "help_text": "High-level product sector, such as personal care products or vehicle-related products.",
+                "label": "Level 1 Category",
+                "source": "gen_cat",
+            },
+            "level_2_category": {
+                "help_text": "Unique product families under each of the product sectors.",
+                "label": "Level 2 Category",
+                "source": "prod_fam",
+            },
+            "level_3_category": {
+                "help_text": "Specific product types in a product family.",
+                "label": "Level 3 Category",
+                "source": "prod_type",
+            },
+            "definition": {
+                "help_text": "Definition or description of products that may be assigned to the PUC.",
+                "label": "Definition",
+                "source": "description",
+            },
+            "kind": {
+                "help_text": "A means by which PUCs can be grouped, e.g. 'formulations' are PUCs related to consumer  \
+                    product formulations (e.g. laundry detergent, shampoo, paint). 'Articles' are PUCs related to \
+                    durable goods, or consumer articles (e.g. couches, children's play equipment)",
+                "label": "Kind",
+            },
+        }
 
 
 class ChemicalSerializer(serializers.ModelSerializer):

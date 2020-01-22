@@ -11,7 +11,7 @@ class PUCFilter(filters.FilterSet):
     )
 
     def dtxsid_filter(self, queryset, name, value):
-        return queryset.dtxsid_filter(value).with_num_products()
+        return queryset.dtxsid_filter(value)
 
     class Meta:
         model = models.PUC
