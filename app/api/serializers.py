@@ -206,14 +206,14 @@ class DocumentSerializer(serializers.ModelSerializer):
              See the Products API for additional information on the product.",
         )
 
-    chemicals = ExtractedChemicalSerializer(
-        source="extractedtext.rawchem.select_subclasses()",
-        many=True,
-        read_only=True,
-        label="chemicals",
-        help_text="TBD",
-    )
+    chemicals = serializers.SerializerMethodField()
 
+    def get_chemicals(self, obj):
+        return ExtractedChemicalSerializer(
+                    obj.extractedtext.rawchem.select_subclasses("extractedchemical"),
+                    many=True
+                ).data
+    
     class Meta:
         model = models.DataDocument
         fields = [
