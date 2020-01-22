@@ -125,7 +125,7 @@ class TestChemical(TestCase):
 
     def test_distinct_queries(self):
         response = self.get("/chemicals/distinct/sid/")
-        self.assertEqual(response["data"][0]["sid"], "DTXSID1020273")
+        self.assertEqual(response["data"][0]["sid"], "DTXSID00184990")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
 
@@ -135,13 +135,13 @@ class TestChemical(TestCase):
         self.assertTrue("meta" in response)
 
         response = self.get("/chemicals/distinct/true_chemname/")
-        self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
+        self.assertEqual(response["data"][0]["true_chemname"], "benzene")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
 
         # Test case insensitivity
         response = self.get("/chemicals/distinct/TrUe_ChEmNaMe/")
-        self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
+        self.assertEqual(response["data"][0]["true_chemname"], "benzene")
 
         # Test non-included path
         self.assertRaises(
