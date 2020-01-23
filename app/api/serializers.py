@@ -106,6 +106,13 @@ class ExtractedChemicalSerializer(RawChemSerializer):
             "upper_wf_analysis",
             "ingredient_rank",
         ]
+        extra_kwargs = {
+            "lower_wf_analysis": {
+                "label": "Weight fraction - lower",
+                "help_text": "Unfortunately this does not appear in the \
+                    automatic documentation",
+            }
+        }
 
 
 class DataTypeSerializer(serializers.ModelSerializer):
