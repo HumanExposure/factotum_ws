@@ -17,7 +17,7 @@ class PUCSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "id": {
                 "help_text": "The unique numeric identifier for the PUC, \
-                    used to cross-reference data obtained from other Factotum APIs,",
+                    used to cross-reference data obtained from other Factotum APIs.",
                 "label": "PUC ID",
             },
             "level_1_category": {
@@ -43,7 +43,7 @@ class PUCSerializer(serializers.ModelSerializer):
             "kind": {
                 "help_text": "A means by which PUCs can be grouped, e.g. 'formulations' are PUCs related to consumer  \
                     product formulations (e.g. laundry detergent, shampoo, paint). 'Articles' are PUCs related to \
-                    durable goods, or consumer articles (e.g. couches, children's play equipment)",
+                    durable goods, or consumer articles (e.g. couches, children's play equipment).",
                 "label": "Kind",
             },
         }
