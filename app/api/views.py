@@ -46,6 +46,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     )
     filterset_class = filters.ProductFilter
 
+
 class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
     """
     list: Service providing a list of all documents in ChemExpoDB, along with 
@@ -55,11 +56,13 @@ class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.DocumentSerializer
-    queryset = models.DataDocument.objects.prefetch_related(
-        Prefetch("extractedtext"),
-        Prefetch("products")
-        ).all().order_by("-id")
-    
+    queryset = (
+        models.DataDocument.objects.prefetch_related(
+            Prefetch("extractedtext"), Prefetch("products")
+        )
+        .all()
+        .order_by("-id")
+    )
 
 
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):

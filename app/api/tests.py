@@ -161,7 +161,6 @@ class TestChemical(TestCase):
 
 class TestDocuments(TestCase):
     def test_retrieve_by_id(self):
-        chem_count = models.RawChem.objects.filter(extracted_text_id=id).count()
         docid = 156051
         response = self.get(f"/documents/{docid}/")
         dd = models.DataDocument.objects.get(pk=docid)
