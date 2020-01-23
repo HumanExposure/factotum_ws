@@ -176,16 +176,22 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-    date = serializers.ReadOnlyField(
-        source="extractedtext__doc_date",
+    date = serializers.SerializerMethodField(
         default=None,
         read_only=True,
         allow_null=True,
         label="Date",
         help_text="Publication date for the document.",
     )
+
+    def get_date(self, obj):
+        if obj.is_extracted:
+            return obj.extractedtext.doc_date
+        else:
+            return None
+
     type = serializers.CharField(
-        source="data_group__group_type__title",
+        source="data_group.group_type.title",
         read_only=True,
         allow_null=False,
         label="Document type",
@@ -236,12 +242,17 @@ class DocumentSerializer(serializers.ModelSerializer):
     )
 
     def get_chemicals(self, obj):
-        return ExtractedChemicalSerializer(
-            obj.extractedtext.rawchem.select_subclasses("extractedchemical").order_by(
-                "component"
-            ),  # not possible to sort by ingredient_rank, since the subclass is undetermined
-            many=True,
-        ).data
+        if obj.is_extracted:
+            return ExtractedChemicalSerializer(
+                obj.extractedtext.rawchem.select_subclasses(
+                    "extractedchemical"
+                ).order_by(
+                    "component"
+                ),  # not possible to sort by ingredient_rank, since the subclass is undetermined
+                many=True,
+            ).data
+        else:
+            return None
 
     class Meta:
         model = models.DataDocument
