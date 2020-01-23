@@ -94,8 +94,10 @@ class TestProduct(TestCase):
 
 
 class TestChemical(TestCase):
+    qs = models.DSSToxLookup.objects.exclude(curated_chemical__isnull=True)
+
     def test_retrieve(self):
-        chem = models.DSSToxLookup.objects.first()
+        chem = self.qs.first()
         response = self.get(f"/chemicals/{chem.sid}/")
         self.assertEqual(response["id"], chem.sid)
         self.assertEqual(response["name"], chem.true_chemname)
@@ -103,14 +105,14 @@ class TestChemical(TestCase):
 
     def test_list(self):
         # test without filter
-        count = models.DSSToxLookup.objects.count()
+        count = self.qs.count()
         response = self.get("/chemicals/")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
 
         # test with PUC filter
-        count = models.DSSToxLookup.objects.filter(
+        count = self.qs.filter(
             curated_chemical__extracted_text__data_document__product__puc__id=1
         ).count()
         response = self.get("/chemicals/", {"puc": 1})

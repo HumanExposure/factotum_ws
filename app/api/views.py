@@ -48,5 +48,7 @@ class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = "sid"
     lookup_url_kwarg = "id"
     serializer_class = serializers.ChemicalSerializer
-    queryset = models.DSSToxLookup.objects.all().order_by("sid")
+    queryset = models.DSSToxLookup.objects.exclude(
+        curated_chemical__isnull=True
+    ).order_by("sid")
     filterset_class = filters.ChemicalFilter
