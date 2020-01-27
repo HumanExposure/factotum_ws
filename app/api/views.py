@@ -131,3 +131,20 @@ class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
             return qs.values(attr.query).distinct().order_by(attr.query)
         else:
             return qs
+
+
+class ChemicalPresenceViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    list: Service providing a list of all chemical presence tags in ChemExpoDB.
+    A 'tag' (or keyword) may be applied to a chemical, indicating that there
+    exists data in ChemExpoDB providing evidence that a chemical is related to
+    that tag. Multiple tags may be applied to a single source-chemical instance,
+    in which case the tags should be interpreted as a group.
+    """
+
+    serializer_class = serializers.ChemicalPresenceSerializer
+    queryset = (
+        models.ExtractedListPresenceTag.objects.all()
+        .select_related("kind")
+        .order_by("id")
+    )

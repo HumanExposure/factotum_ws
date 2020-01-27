@@ -228,3 +228,31 @@ class ChemicalTrueChemNameAggSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RawChem
         fields = ["true_chemname"]
+
+
+class ChemicalPresenceSerializer(serializers.ModelSerializer):
+    kind = serializers.CharField(
+        required=True,
+        max_length=50,
+        source="kind.name",
+        label="Kind",
+        help_text="A means by which tags can be grouped, e.g. 'general use' tags vs. 'pharmaceutical' tags.",
+    )
+
+    class Meta:
+        model = models.ExtractedListPresenceTag
+        fields = ["id", "name", "definition", "kind"]
+        extra_kwargs = {
+            "id": {
+                "help_text": "The unique numeric identifier for the chemical presence tag, used to cross-reference data obtained from other Factotum APIs.",
+                "label": "Chemical Presence ID",
+            },
+            "name": {
+                "help_text": "A 'tag' (or keyword) which may be applied to a chemical, indicating that there exists data in ChemExpoDB providing evidence that a chemical is related to that tag.",
+                "label": "Name",
+            },
+            "definition": {
+                "help_text": "Definition or description of the chemical presence tag.",
+                "label": "Definition",
+            },
+        }
