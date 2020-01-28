@@ -3,6 +3,7 @@ from rest_framework import viewsets
 
 from app.api import filters, serializers
 from dashboard import models
+from django_mysql.models import add_QuerySetMixin
 
 
 class PUCViewSet(viewsets.ReadOnlyModelViewSet):
@@ -38,18 +39,29 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    list: Service providing a list of all documents in ChemExpoDB, along with 
-    metadata describing the document. Service also provides the actual data 
-    points found in, and extracted from, the document. e.g., chemicals and their 
+    list: Service providing a list of all documents in ChemExpoDB, along with
+    metadata describing the document. Service also provides the actual data
+    points found in, and extracted from, the document. e.g., chemicals and their
     weight fractions may be included for composition documents.
     """
 
     serializer_class = serializers.DocumentSerializer
+    # By using the STRAIGHT_JOIN directive, the query time is reduced
+    # from >2 seconds to ~0.0005 seconds. Pretty big! This is due to
+    # poor MySQL optimization with INNER JOIN and ORDER BY.
     queryset = (
-        models.DataDocument.objects.prefetch_related(
-            Prefetch("extractedtext"), Prefetch("products")
+        add_QuerySetMixin(models.DataDocument.objects.all())
+        .prefetch_related(
+            Prefetch(
+                "extractedtext__rawchem",
+                queryset=models.RawChem.objects.filter(dsstox__isnull=False)
+                .select_related("dsstox")
+                .select_subclasses(),
+            ),
+            Prefetch("products"),
         )
-        .all()
+        .straight_join()
+        .select_related("data_group__group_type")
         .order_by("-id")
     )
 
