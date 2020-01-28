@@ -198,7 +198,6 @@ class DocumentSerializer(serializers.ModelSerializer):
         help_text="Type of data provided by the document, e.g. 'Composition' \
             indicates the document provides data on chemical composition of a consumer product.",
     )
-
     url = serializers.URLField(
         source="pdf_url",
         read_only=True,
@@ -209,7 +208,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     products = serializers.PrimaryKeyRelatedField(
         many=True,
         read_only=True,
-        label="ProductIDs",
+        label="Product IDs",
         help_text="Unique numeric identifiers for products associated with the \
              original data document. May be >1 product associated with each document. \
              See the Products API for additional information on the product.",
