@@ -14,7 +14,7 @@ DJANGO_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
 ]
-THIRD_PARTY_APPS = ["dashboard", "django_filters", "rest_framework"]
+THIRD_PARTY_APPS = ["dashboard", "django_filters", "rest_framework", "django_mysql"]
 LOCAL_APPS = ["app.api", "app.docs", "app.core"]
 INSTALLED_APPS = THIRD_PARTY_OVERRIDE_APPS + DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -53,6 +53,14 @@ DATABASES = {
         "TEST": {"NAME": "test_" + env.SQL_DATABASE + "_factotum_ws"},
     }
 }
+
+DJANGO_MYSQL_REWRITE_QUERIES = True
+SILENCED_SYSTEM_CHECKS = [
+    "django_mysql.W001",
+    "django_mysql.W002",
+    "django_mysql.W003",
+    "django_mysql.W004",
+]
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/New_York"
