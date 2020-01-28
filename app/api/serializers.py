@@ -70,111 +70,6 @@ class ChemicalSerializer(serializers.ModelSerializer):
             },
         }
 
-class RawChemSerializer(serializers.ModelSerializer):
-
-    sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
-    name = serializers.SerializerMethodField(
-        read_only=True,
-        help_text="The true chemical name for curated records, the raw chemical name otherwise",
-    )
-    cas = serializers.SerializerMethodField(
-        read_only=True,
-        help_text="The true CAS for curated records, the raw CAS otherwise",
-    )
-    component = serializers.CharField(
-        read_only=True,
-        help_text="Subcategory grouping chemical information on the document \
-                    (may or may not be populated). Used when the document provides \
-                    information on chemical make-up of multiple components or portions \
-                    of a product (e.g. a hair care set (product) which contains a bottle of \
-                    shampoo (component 1) and bottle of body wash (component 2))",
-    )
-
-    def get_sid(self, obj) -> str:
-        if obj.dsstox is None:
-            return None
-        return obj.dsstox.sid
-
-    def get_name(self, obj) -> str:
-        if obj.dsstox is None:
-            return obj.raw_chem_name
-        return obj.dsstox.true_chemname
-
-    def get_cas(self, obj) -> str:
-        if obj.dsstox is None:
-            return obj.raw_cas
-        return obj.dsstox.true_cas
-
-    class Meta:
-        model = models.RawChem
-        fields = ["id", "sid", "rid", "name", "cas", "component"]
-
-
-class ExtractedChemicalSerializer(RawChemSerializer):
-    """Inherits from RawChemSerializer
-    """
-
-    # min_weight_fraction = serializers.SerializerMethodField(
-    #     read_only=True, help_text="minimum weight fraction"
-    # )
-    # max_weight_fraction = serializers.SerializerMethodField(
-    #     read_only=True, help_text="maximum weight fraction"
-    # )
-
-    def get_min_weight_fraction(self, obj) -> float:
-        try:
-            ec = obj.extractedchemical
-            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
-                return ec.central_wf_analysis
-            return ec.lower_wf_analysis
-        except models.ExtractedChemical.DoesNotExist:
-            return None
-
-    def get_max_weight_fraction(self, obj) -> float:
-        try:
-            ec = obj.extractedchemical
-            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
-                return ec.central_wf_analysis
-            return ec.upper_wf_analysis
-        except models.ExtractedChemical.DoesNotExist:
-            return None
-
-    class Meta:
-        model = models.ExtractedChemical
-        fields = [
-            "component",
-            "sid",
-            # "min_weight_fraction",
-            # "max_weight_fraction",
-            "lower_wf_analysis",
-            "central_wf_analysis",
-            "upper_wf_analysis",
-            "ingredient_rank",
-        ]
-        extra_kwargs = {
-            "lower_wf_analysis": {
-                "label": "Weight fraction - lower",
-                "help_text": "Unfortunately this does not appear in the \
-                    automatic documentation",
-            }
-        }
-
-
-class DataTypeSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="title")
-
-    class Meta:
-        model = models.DocumentType
-        fields = ["name", "description"]
-
-
-class DataSourceSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="title")
-
-    class Meta:
-        model = models.DataSource
-        fields = ["name", "url", "description"]
-
 
 class ProductSerializer(serializers.ModelSerializer):
     puc_id = serializers.IntegerField(
@@ -285,19 +180,15 @@ class ExtractedChemicalSerializer(serializers.ModelSerializer):
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-    date = serializers.SerializerMethodField(
+    date = serializers.CharField(
         default=None,
         read_only=True,
         allow_null=True,
+        max_length=25,
+        source="extractedtext.doc_date",
         label="Date",
         help_text="Publication date for the document.",
     )
-
-    def get_date(self, obj):
-        if obj.is_extracted:
-            return obj.extractedtext.doc_date
-        else:
-            return None
 
     type = serializers.CharField(
         source="data_group.group_type.title",
