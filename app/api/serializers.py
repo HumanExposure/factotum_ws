@@ -50,103 +50,26 @@ class PUCSerializer(serializers.ModelSerializer):
 
 
 class ChemicalSerializer(serializers.ModelSerializer):
-    sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
-    name = serializers.SerializerMethodField(
-        read_only=True,
-        help_text="The true chemical name for curated records, the raw chemical name otherwise",
-    )
-    cas = serializers.SerializerMethodField(
-        read_only=True,
-        help_text="The true CAS for curated records, the raw CAS otherwise",
-    )
-    datadocument_id = serializers.IntegerField(
-        source="extracted_text_id",
-        read_only=True,
-        help_text="the ID of the data document where this chemical was found",
-    )
-
-    def get_sid(self, obj) -> str:
-        if obj.dsstox is None:
-            return None
-        return obj.dsstox.sid
-
-    def get_name(self, obj) -> str:
-        if obj.dsstox is None:
-            return obj.raw_chem_name
-        return obj.dsstox.true_chemname
-
-    def get_cas(self, obj) -> str:
-        if obj.dsstox is None:
-            return obj.raw_cas
-        return obj.dsstox.true_cas
-
     class Meta:
-        model = models.RawChem
-        fields = ["id", "sid", "rid", "name", "cas", "datadocument_id"]
-
-
-class DataTypeSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="title")
-
-    class Meta:
-        model = models.DocumentType
-        fields = ["name", "description"]
-
-
-class DataSourceSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="title")
-
-    class Meta:
-        model = models.DataSource
-        fields = ["name", "url", "description"]
-
-
-class IngredientSerializer(ChemicalSerializer):
-    min_weight_fraction = serializers.SerializerMethodField(
-        read_only=True, help_text="minimum weight fraction"
-    )
-    max_weight_fraction = serializers.SerializerMethodField(
-        read_only=True, help_text="maximum weight fraction"
-    )
-    data_type = DataTypeSerializer(
-        source="extracted_text.data_document.document_type", help_text="data type"
-    )
-    source = DataSourceSerializer(
-        source="extracted_text.data_document.data_group.data_source",
-        help_text="data source",
-    )
-
-    def get_min_weight_fraction(self, obj) -> float:
-        try:
-            ec = obj.extractedchemical
-            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
-                return ec.central_wf_analysis
-            return ec.lower_wf_analysis
-        except models.ExtractedChemical.DoesNotExist:
-            return None
-
-    def get_max_weight_fraction(self, obj) -> float:
-        try:
-            ec = obj.extractedchemical
-            if not ec.lower_wf_analysis and not ec.upper_wf_analysis:
-                return ec.central_wf_analysis
-            return ec.upper_wf_analysis
-        except models.ExtractedChemical.DoesNotExist:
-            return None
-
-    class Meta:
-        model = models.RawChem
-        fields = [
-            "id",
-            "sid",
-            "rid",
-            "name",
-            "cas",
-            "min_weight_fraction",
-            "max_weight_fraction",
-            "data_type",
-            "source",
-        ]
+        model = models.DSSToxLookup
+        fields = ["id", "name", "cas"]
+        extra_kwargs = {
+            "id": {
+                "help_text": "The DSSTox Substance Identifier, a unique identifier associated with a chemical substance.",
+                "label": "DTXSID",
+                "source": "sid",
+            },
+            "name": {
+                "help_text": "Preferred name for the chemical substance.",
+                "label": "Preferred name",
+                "source": "true_chemname",
+            },
+            "cas": {
+                "help_text": "Preferred CAS number for the chemical substance.",
+                "label": "Preferred CAS",
+                "source": "true_cas",
+            },
+        }
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -198,33 +121,3 @@ class ProductSerializer(serializers.ModelSerializer):
                 "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
             },
         }
-
-
-class ChemicalSidAggSerializer(serializers.ModelSerializer):
-    sid = serializers.CharField(
-        source="dsstox__sid", help_text="DTXSID", read_only=True
-    )
-
-    class Meta:
-        model = models.RawChem
-        fields = ["sid"]
-
-
-class ChemicalTrueCasAggSerializer(serializers.ModelSerializer):
-    true_cas = serializers.CharField(
-        source="dsstox__true_cas", help_text="True CAS", read_only=True
-    )
-
-    class Meta:
-        model = models.RawChem
-        fields = ["true_cas"]
-
-
-class ChemicalTrueChemNameAggSerializer(serializers.ModelSerializer):
-    true_chemname = serializers.CharField(
-        source="dsstox__true_chemname", help_text="True chemical name", read_only=True
-    )
-
-    class Meta:
-        model = models.RawChem
-        fields = ["true_chemname"]
