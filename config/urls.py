@@ -9,6 +9,7 @@ from app.docs import views as docsviews
 router = routers.SimpleRouter()
 router.register(r"pucs", apiviews.PUCViewSet)
 router.register(r"products", apiviews.ProductViewSet)
+router.register(r"documents", apiviews.DocumentViewSet)
 router.register(r"chemicals", apiviews.ChemicalViewSet)
 
 urlpatterns = [

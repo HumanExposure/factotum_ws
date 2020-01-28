@@ -117,3 +117,26 @@ class TestChemical(TestCase):
         ).count()
         response = self.get("/chemicals/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
+
+
+class TestDocuments(TestCase):
+    def test_retrieve_by_id(self):
+        docid = 156051
+        response = self.get(f"/documents/{docid}/")
+        dd = models.DataDocument.objects.get(pk=docid)
+
+        # Check the method-derived values
+        self.assertEqual(response.get("date"), dd.extractedtext.doc_date)
+        self.assertEqual(response.get("type"), dd.data_group.group_type.title)
+        # the json products should match the ORM products
+        prods = dd.products.values_list("id", flat=True)
+        self.assertEqual(response.get("products"), list(prods))
+
+        # the json chemicals should match the ORM chemicals
+        chems = dd.extractedtext.rawchem.select_subclasses()
+        chem_orm = chems[2]
+        chem_json = response.get("chemicals")[2]
+        self.assertEqual(
+            float(chem_json.get("central_wf_analysis")),
+            float(chem_orm.central_wf_analysis),
+        )
