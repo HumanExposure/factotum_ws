@@ -1,13 +1,13 @@
 black==19.3b0
 Django>=2.2,<2.3
-django-environ>=0.4.5,<0.5
 django-filter>=2.2.0,<2.3
 djangorestframework>=3.10.3,<3.11
 drf-yasg>=1.17.0,<1.18.0
-gunicorn>=19.9.0,<19.10.0
-json-logging-py==0.2
+gunicorn>=20.0.0,<20.1.0
 mysqlclient>=1.4.4,<1.5
 pyflakes==2.1.1
+python-dotenv>=0.10.3,<0.11
+python-logstash==0.4.6
 PyYAML>=5.1.2,<5.2
 six>=1.12.0,<1.13
 uritemplate>=3.0.0,<3.1

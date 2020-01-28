@@ -1,25 +1,12 @@
 import os
 
-import environ
+from config.environment import env
 
-env = environ.Env(
-    DEBUG=bool,
-    SECRET_KEY=str,
-    ALLOWED_HOSTS=list,
-    SQL_DATABASE=str,
-    SQL_USER=str,
-    SQL_PASSWORD=str,
-    SQL_HOST=str,
-    SQL_PORT=int,
-)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-env.read_env(os.path.join(BASE_DIR, ".env"))
-
-SECRET_KEY = env("SECRET_KEY")
-DEBUG = env("DEBUG")
-
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+DEBUG = env.DEBUG
+SECRET_KEY = env.SECRET_KEY
+ALLOWED_HOSTS = env.ALLOWED_HOSTS
 
 THIRD_PARTY_OVERRIDE_APPS = ["whitenoise.runserver_nostatic"]
 DJANGO_APPS = [
@@ -55,17 +42,15 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env("SQL_DATABASE"),
-        "USER": env("SQL_USER"),
-        "PASSWORD": env("SQL_PASSWORD"),
-        "HOST": env("SQL_HOST"),
-        "PORT": env("SQL_PORT"),
-        "TEST": {"NAME": "test_" + env("SQL_DATABASE") + "_factotum_ws"},
+        "NAME": env.SQL_DATABASE,
+        "USER": env.SQL_USER,
+        "PASSWORD": env.SQL_PASSWORD,
+        "HOST": env.SQL_HOST,
+        "PORT": env.SQL_PORT,
+        "TEST": {"NAME": "test_" + env.SQL_DATABASE + "_factotum_ws"},
     }
 }
 
@@ -76,14 +61,8 @@ USE_L10N = True
 USE_TZ = False
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 WHITENOISE_AUTOREFRESH = DEBUG
 WHITENOISE_USE_FINDERS = DEBUG
 
@@ -99,9 +78,9 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
+    "DEFAULT_GENERATOR_CLASS": "app.core.generators.StandardSchemaGenerator",
     "DEFAULT_AUTO_SCHEMA_CLASS": "app.core.inspectors.StandardAutoSchema",
     "DEFAULT_FIELD_INSPECTORS": [
-        "app.core.inspectors.NoSchemaTitleInspector",
         "drf_yasg.inspectors.CamelCaseJSONFilter",
         "drf_yasg.inspectors.ReferencingSerializerInspector",
         "drf_yasg.inspectors.RelatedFieldInspector",
@@ -118,4 +97,60 @@ SWAGGER_SETTINGS = {
     "DEFAULT_FILTER_INSPECTORS": ["app.core.inspectors.DjangoFiltersInspector"],
     "DEFAULT_PAGINATOR_INSPECTORS": ["app.core.inspectors.StandardPaginatorInspector"],
     "SECURITY_DEFINITIONS": {},
+}
+
+LOGGING = {
+    "version": 1,
+    "formatters": {
+        "console": {
+            "format": "%(asctime)s [%(levelname)s] %(message)s",
+            "datefmt": "[%d/%b/%Y %H:%M:%S]",
+            "class": "logging.Formatter",
+        },
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] [INFO] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "console",
+        },
+        "django.server": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+        },
+        "logstash": {
+            "level": "INFO",
+            "class": "logstash.UDPLogstashHandler",
+            "host": env.LOGSTASH_HOST,
+            "port": int(env.LOGSTASH_PORT),
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+            "tags": ["factotum_ws", "access"],
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.server": {
+            "handlers": ["logstash", "django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "gunicorn.access": {
+            "level": "INFO",
+            "handlers": ["logstash", "console"],
+            "propagate": False,
+        },
+        "gunicorn.error": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+    },
 }

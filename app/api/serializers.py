@@ -4,32 +4,61 @@ from dashboard import models
 
 
 class PUCSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        source="__str__", read_only=True, help_text="full name of this PUC"
-    )
-    num_products = serializers.IntegerField(
-        read_only=True,
-        help_text="the number of distinct products associated with this PUC",
-    )
-
     class Meta:
         model = models.PUC
         fields = [
             "id",
-            "name",
-            "gen_cat",
-            "prod_fam",
-            "prod_type",
-            "description",
+            "level_1_category",
+            "level_2_category",
+            "level_3_category",
+            "definition",
             "kind",
-            "num_products",
         ]
+        extra_kwargs = {
+            "id": {
+                "help_text": "The unique numeric identifier for the PUC, \
+                    used to cross-reference data obtained from other Factotum APIs,",
+                "label": "PUC ID",
+            },
+            "level_1_category": {
+                "help_text": "High-level product sector, such as personal care products or vehicle-related products.",
+                "label": "Level 1 Category",
+                "source": "gen_cat",
+            },
+            "level_2_category": {
+                "help_text": "Unique product families under each of the product sectors.",
+                "label": "Level 2 Category",
+                "source": "prod_fam",
+            },
+            "level_3_category": {
+                "help_text": "Specific product types in a product family.",
+                "label": "Level 3 Category",
+                "source": "prod_type",
+            },
+            "definition": {
+                "help_text": "Definition or description of products that may be assigned to the PUC.",
+                "label": "Definition",
+                "source": "description",
+            },
+            "kind": {
+                "help_text": "A means by which PUCs can be grouped, e.g. 'formulations' are PUCs related to consumer  \
+                    product formulations (e.g. laundry detergent, shampoo, paint). 'Articles' are PUCs related to \
+                    durable goods, or consumer articles (e.g. couches, children's play equipment)",
+                "label": "Kind",
+            },
+        }
 
 
 class ChemicalSerializer(serializers.ModelSerializer):
     sid = serializers.SerializerMethodField(read_only=True, help_text="SID")
-    name = serializers.SerializerMethodField(read_only=True, help_text="chemical name")
-    cas = serializers.SerializerMethodField(read_only=True, help_text="CAS")
+    name = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="The true chemical name for curated records, the raw chemical name otherwise",
+    )
+    cas = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="The true CAS for curated records, the raw CAS otherwise",
+    )
     datadocument_id = serializers.IntegerField(
         source="extracted_text_id",
         read_only=True,
@@ -54,18 +83,6 @@ class ChemicalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RawChem
         fields = ["id", "sid", "rid", "name", "cas", "datadocument_id"]
-
-
-class RIDChemicalSerializer(ChemicalSerializer):
-    class Meta:
-        model = models.RawChem
-        fields = ["rid"]
-
-
-class RIDDocChemicalSerializer(ChemicalSerializer):
-    class Meta:
-        model = models.RawChem
-        fields = ["rid", "datadocument_id"]
 
 
 class DataTypeSerializer(serializers.ModelSerializer):
@@ -132,56 +149,82 @@ class IngredientSerializer(ChemicalSerializer):
         ]
 
 
-class DocumentIdSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        return instance.id
-
-    class Meta:
-        model = models.DataDocument
-        fields = "__all__"
-
-
 class ProductSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        source="title", help_text="the name of this product", read_only=True
-    )
-    upc = serializers.CharField(help_text="UPC for this product", read_only=True)
-    documentIDs = DocumentIdSerializer(
-        source="documents",
-        many=True,
+    puc_id = serializers.IntegerField(
+        source="uber_puc.id",
+        default=None,
         read_only=True,
-        help_text="Data document IDs associated with this product",
+        allow_null=True,
+        label="PUC ID",
+        help_text=" Unique numeric identifier for the product use category assigned to the product \
+        (if one has been assigned). Use the PUCs API to obtain additional information on the PUC.",
     )
-    puc = PUCSerializer(source="uber_puc", read_only=True, help_text="PUC")
-    chemicals = IngredientSerializer(
-        source="rawchems", many=True, read_only=True, help_text="chemicals"
+    document_id = serializers.IntegerField(
+        source="documents.first.id",
+        read_only=True,
+        label="Document ID",
+        help_text="Unique numeric identifier for the original data document associated with \
+            the product. Use the Documents API to obtain additional information on the document.",
     )
 
     class Meta:
         model = models.Product
-        fields = ["id", "name", "upc", "documentIDs", "puc", "chemicals"]
+        fields = ["id", "name", "upc", "manufacturer", "brand", "puc_id", "document_id"]
+        extra_kwargs = {
+            "id": {
+                "label": "Product ID",
+                "help_text": "The unique numeric identifier for the product, \
+            used to cross-reference data obtained from other Factotum APIs.",
+            },
+            "name": {
+                "label": "Name",
+                "help_text": "Name of the product.",
+                "source": "title",
+            },
+            "upc": {
+                "label": "UPC",
+                "help_text": "The Universal Product Code, \
+        or unique numeric code used for scanning items at the point-of-sale. \
+            UPC may be represented as 'stub#' if the UPC for the product is \
+            not known.",
+            },
+            "manufacturer": {
+                "label": "Manufacturer",
+                "help_text": "Manufacturer of the product, if known.",
+            },
+            "brand": {
+                "label": "Brand",
+                "source": "brand_name",
+                "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
+            },
+        }
 
 
+class ChemicalSidAggSerializer(serializers.ModelSerializer):
+    sid = serializers.CharField(
+        source="dsstox__sid", help_text="DTXSID", read_only=True
+    )
 
-class TrueChemicalSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.DSSToxLookup
-        fields = ["id", "sid", "true_cas", "true_chemname"]
+        model = models.RawChem
+        fields = ["sid"]
 
 
-class TrueChemicalNameSerializer(serializers.ModelSerializer):
+class ChemicalTrueCasAggSerializer(serializers.ModelSerializer):
+    true_cas = serializers.CharField(
+        source="dsstox__true_cas", help_text="True CAS", read_only=True
+    )
+
     class Meta:
-        model = models.DSSToxLookup
-        fields = ["true_chemname"]
-
-
-class TrueChemicalCasSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.DSSToxLookup
+        model = models.RawChem
         fields = ["true_cas"]
 
 
-class TrueChemicalSidSerializer(serializers.ModelSerializer):
+class ChemicalTrueChemNameAggSerializer(serializers.ModelSerializer):
+    true_chemname = serializers.CharField(
+        source="dsstox__true_chemname", help_text="True chemical name", read_only=True
+    )
+
     class Meta:
-        model = models.DSSToxLookup
-        fields = ["sid"]
+        model = models.RawChem
+        fields = ["true_chemname"]
