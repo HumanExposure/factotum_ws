@@ -137,6 +137,6 @@ class TestDocuments(TestCase):
         chem_orm = chems[2]
         chem_json = response.get("chemicals")[2]
         self.assertEqual(
-            float(chem_json.get("central_wf_analysis")),
+            float(chem_json.get("central_weight_fraction")),
             float(chem_orm.central_wf_analysis),
         )
