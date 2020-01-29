@@ -1,6 +1,33 @@
+from django.db import connection, reset_queries
+from django.test.utils import override_settings
+from drf_yasg.generators import EndpointEnumerator
+
 from app.core.test import TestCase
 
 from dashboard import models
+
+
+class TestQueryCount(TestCase):
+    """Test that the API list query performance is not dependant on the number
+    of data returned.
+    """
+
+    @override_settings(DEBUG=True)
+    def test_query_count(self):
+        reset_queries()
+        for endpoint in EndpointEnumerator().get_api_endpoints():
+            url = endpoint[0]
+            # Only hit list endpoints
+            if "{" not in url and "}" not in url:
+                result = self.get(url)
+                max_queries = len(result["data"])
+                num_queries = len(connection.queries)
+                # Number of queries must be less than the number of data objects returned.
+                self.assertTrue(
+                    num_queries < max_queries,
+                    f"Endpoint '{url}' made {num_queries} SQL queries. The maximum allowed query count is {max_queries}. Adjust the view's queryset to use 'select_related' or 'prefetch_related'.",
+                )
+                reset_queries()
 
 
 class TestPUC(TestCase):
