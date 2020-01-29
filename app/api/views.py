@@ -61,7 +61,7 @@ class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
             Prefetch("products"),
         )
         .straight_join()
-        .select_related("data_group__group_type")
+        .select_related("data_group__group_type", "document_type")
         .order_by("-id")
     )
 
