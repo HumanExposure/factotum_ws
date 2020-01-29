@@ -127,7 +127,7 @@ class TestDocuments(TestCase):
 
         # Check the method-derived values
         self.assertEqual(response.get("date"), dd.extractedtext.doc_date)
-        self.assertEqual(response.get("type"), dd.data_group.group_type.title)
+        self.assertEqual(response.get("data_type"), dd.data_group.group_type.title)
         # the json products should match the ORM products
         prods = dd.products.values_list("id", flat=True)
         self.assertEqual(response.get("products"), list(prods))

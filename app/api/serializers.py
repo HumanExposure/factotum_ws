@@ -190,13 +190,21 @@ class DocumentSerializer(serializers.ModelSerializer):
         help_text="Publication date for the document.",
     )
 
-    type = serializers.CharField(
+    data_type = serializers.CharField(
         source="data_group.group_type.title",
         read_only=True,
         allow_null=False,
-        label="Document type",
+        label="Data type",
         help_text="Type of data provided by the document, e.g. 'Composition' \
             indicates the document provides data on chemical composition of a consumer product.",
+    )
+    document_type = serializers.CharField(
+        source="document_type.title",
+        read_only=True,
+        allow_null=False,
+        label="Document type",
+        help_text="Standardized description of the type of document (e.g. Safety Data Sheet (SDS), \
+            product label, journal article, government report).",
     )
     url = serializers.URLField(
         source="pdf_url",
@@ -226,7 +234,8 @@ class DocumentSerializer(serializers.ModelSerializer):
             "subtitle",
             "organization",
             "date",
-            "type",
+            "data_type",
+            "document_type",
             "url",
             "notes",
             "products",
