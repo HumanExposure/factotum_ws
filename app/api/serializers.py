@@ -17,7 +17,7 @@ class PUCSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "id": {
                 "help_text": "The unique numeric identifier for the PUC, \
-                    used to cross-reference data obtained from other Factotum APIs,",
+                    used to cross-reference data obtained from other Factotum APIs.",
                 "label": "PUC ID",
             },
             "level_1_category": {
@@ -43,7 +43,7 @@ class PUCSerializer(serializers.ModelSerializer):
             "kind": {
                 "help_text": "A means by which PUCs can be grouped, e.g. 'formulations' are PUCs related to consumer  \
                     product formulations (e.g. laundry detergent, shampoo, paint). 'Articles' are PUCs related to \
-                    durable goods, or consumer articles (e.g. couches, children's play equipment)",
+                    durable goods, or consumer articles (e.g. couches, children's play equipment).",
                 "label": "Kind",
             },
         }
@@ -119,5 +119,33 @@ class ProductSerializer(serializers.ModelSerializer):
                 "label": "Brand",
                 "source": "brand_name",
                 "help_text": "Brand name for the product, if known. May be the same as the manufacturer.",
+            },
+        }
+
+
+class ChemicalPresenceSerializer(serializers.ModelSerializer):
+    kind = serializers.CharField(
+        required=True,
+        max_length=50,
+        source="kind.name",
+        label="Kind",
+        help_text="A means by which tags can be grouped, e.g. 'general use' tags vs. 'pharmaceutical' tags.",
+    )
+
+    class Meta:
+        model = models.ExtractedListPresenceTag
+        fields = ["id", "name", "definition", "kind"]
+        extra_kwargs = {
+            "id": {
+                "help_text": "The unique numeric identifier for the chemical presence tag, used to cross-reference data obtained from other Factotum APIs.",
+                "label": "Chemical Presence ID",
+            },
+            "name": {
+                "help_text": "A 'tag' (or keyword) which may be applied to a chemical, indicating that there exists data in ChemExpoDB providing evidence that a chemical is related to that tag.",
+                "label": "Name",
+            },
+            "definition": {
+                "help_text": "Definition or description of the chemical presence tag.",
+                "label": "Definition",
             },
         }

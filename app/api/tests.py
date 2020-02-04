@@ -117,3 +117,22 @@ class TestChemical(TestCase):
         ).count()
         response = self.get("/chemicals/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
+
+
+class TestChemicalPresence(TestCase):
+    qs = models.ExtractedListPresenceTag.objects.all()
+
+    def test_retrieve(self):
+        tag = self.qs.first()
+        response = self.get("/chemicalpresences/%s/" % tag.id)
+        self.assertEqual(response["id"], tag.id)
+        self.assertEqual(response["name"], tag.name)
+        self.assertEqual(response["definition"], tag.definition)
+        self.assertEqual(response["kind"], tag.kind.name)
+
+    def test_list(self):
+        count = self.qs.count()
+        response = self.get("/chemicalpresences/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
