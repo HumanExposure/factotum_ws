@@ -146,25 +146,20 @@ class TestChemical(TestCase):
         self.assertEqual(count, response["meta"]["count"])
 
 
-class TestDocuments(TestCase):
-    def test_retrieve_by_id(self):
-        docid = 156051
-        response = self.get(f"/documents/{docid}/")
-        dd = models.DataDocument.objects.get(pk=docid)
+class TestChemicalPresence(TestCase):
+    qs = models.ExtractedListPresenceTag.objects.all()
 
-        # Check the method-derived values
-        self.assertEqual(response.get("date"), dd.extractedtext.doc_date)
-        self.assertEqual(response.get("data_type"), dd.data_group.group_type.title)
-        self.assertEqual(response.get("document_type"), dd.document_type.title)
-        # the json products should match the ORM products
-        prods = dd.products.values_list("id", flat=True)
-        self.assertEqual(response.get("products"), list(prods))
+    def test_retrieve(self):
+        tag = self.qs.first()
+        response = self.get("/chemicalpresences/%s/" % tag.id)
+        self.assertEqual(response["id"], tag.id)
+        self.assertEqual(response["name"], tag.name)
+        self.assertEqual(response["definition"], tag.definition)
+        self.assertEqual(response["kind"], tag.kind.name)
 
-        # the json chemicals should match the ORM chemicals
-        chems = dd.extractedtext.rawchem.select_subclasses()
-        chem_orm = chems[2]
-        chem_json = response.get("chemicals")[2]
-        self.assertEqual(
-            float(chem_json.get("central_weight_fraction")),
-            float(chem_orm.central_wf_analysis),
-        )
+    def test_list(self):
+        count = self.qs.count()
+        response = self.get("/chemicalpresences/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        self.assertEqual(count, response["meta"]["count"])
