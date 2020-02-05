@@ -1,4 +1,3 @@
-from django.db.models import Prefetch
 from django_filters import rest_framework as filters
 
 from dashboard import models
@@ -23,27 +22,9 @@ class PUCFilter(filters.FilterSet):
 class ProductFilter(filters.FilterSet):
     chemical = filters.CharFilter(
         help_text="A chemical DTXSID to filter products against.",
-        method="dtxsid_filter",
+        field_name="documents__extractedtext__rawchem__dsstox__sid",
         initial="DTXSID6026296",
     )
-
-    def dtxsid_filter(self, queryset, name, value):
-        queryset = queryset.prefetch_related(None)
-
-        return queryset.filter(
-            datadocument__extractedtext__rawchem__dsstox__sid=value
-        ).prefetch_related(
-            Prefetch("producttopuc_set"),
-            Prefetch(
-                "datadocument_set__extractedtext__rawchem",
-                queryset=models.RawChem.objects.select_related(
-                    "extractedchemical",
-                    "dsstox",
-                    "extracted_text__data_document__document_type",
-                    "extracted_text__data_document__data_group__data_source",
-                ).filter(dsstox__sid=value),
-            ),
-        )
 
     upc = filters.CharFilter(
         help_text="A Product UPC to filter products against.", initial="stub_47"
@@ -65,8 +46,9 @@ class ChemicalFilter(filters.FilterSet):
     """
 
     puc = filters.NumberFilter(
-        "extracted_text__data_document__product__puc__id",
-        help_text="A `puc_id` to filter chemicals against.",
+        help_text="A PUC ID to filter chemicals against.",
+        field_name="curated_chemical__extracted_text__data_document__product__puc__id",
+        initial="1",
     )
 
     sid = filters.CharFilter(
@@ -98,5 +80,5 @@ class ChemicalFilter(filters.FilterSet):
         )
 
     class Meta:
-        model = models.RawChem
+        model = models.DSSToxLookup
         fields = []

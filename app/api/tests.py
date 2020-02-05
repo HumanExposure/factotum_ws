@@ -1,6 +1,33 @@
+from django.db import connection, reset_queries
+from django.test.utils import override_settings
+from drf_yasg.generators import EndpointEnumerator
+
 from app.core.test import TestCase
 
 from dashboard import models
+
+
+class TestQueryCount(TestCase):
+    """Test that the API list query performance is not dependant on the number
+    of data returned.
+    """
+
+    @override_settings(DEBUG=True)
+    def test_query_count(self):
+        reset_queries()
+        for endpoint in EndpointEnumerator().get_api_endpoints():
+            url = endpoint[0]
+            # Only hit list endpoints
+            if "{" not in url and "}" not in url:
+                result = self.get(url)
+                max_queries = len(result["data"])
+                num_queries = len(connection.queries)
+                # Number of queries must be less than the number of data objects returned.
+                self.assertTrue(
+                    num_queries < max_queries,
+                    f"Endpoint '{url}' made {num_queries} SQL queries. The maximum allowed query count is {max_queries}. Adjust the view's queryset to use 'select_related' or 'prefetch_related'.",
+                )
+                reset_queries()
 
 
 class TestPUC(TestCase):
@@ -94,22 +121,14 @@ class TestProduct(TestCase):
 
 
 class TestChemical(TestCase):
+    qs = models.DSSToxLookup.objects.exclude(curated_chemical__isnull=True)
+
     def test_retrieve(self):
-        chem = models.RawChem.objects.filter(rid__isnull=False).first()
-        response = self.get("/chemicals/%s/" % chem.rid)
-        if chem.dsstox is not None:
-            sid = chem.dsstox.sid
-            name = chem.dsstox.true_chemname
-            cas = chem.dsstox.true_cas
-        else:
-            sid = None
-            name = chem.raw_chem_name
-            cas = chem.raw_cas
-        self.assertEqual(response["id"], chem.id)
-        self.assertEqual(response["sid"], sid)
-        self.assertEqual(response["rid"], chem.rid)
-        self.assertEqual(response["name"], name)
-        self.assertEqual(response["cas"], cas)
+        chem = self.qs.first()
+        response = self.get(f"/chemicals/{chem.sid}/")
+        self.assertEqual(response["id"], chem.sid)
+        self.assertEqual(response["name"], chem.true_chemname)
+        self.assertEqual(response["cas"], chem.true_cas)
 
     def test_retrieve_by_sid(self):
         sid = "DTXSID6026296"
@@ -120,15 +139,15 @@ class TestChemical(TestCase):
 
     def test_list(self):
         # test without filter
-        count = models.RawChem.objects.count()
+        count = self.qs.count()
         response = self.get("/chemicals/")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
 
-        # test with filter
-        count = models.RawChem.objects.filter(
-            extracted_text__data_document__product__puc__id=1
+        # test with PUC filter
+        count = self.qs.filter(
+            curated_chemical__extracted_text__data_document__product__puc__id=1
         ).count()
         response = self.get("/chemicals/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
@@ -139,21 +158,21 @@ class TestChemical(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
 
-        response = self.get("/chemicals/distinct/true_cas/")
-        self.assertEqual(response["data"][0]["true_cas"], "120-47-8")
+
+class TestChemicalPresence(TestCase):
+    qs = models.ExtractedListPresenceTag.objects.all()
+
+    def test_retrieve(self):
+        tag = self.qs.first()
+        response = self.get("/chemicalpresences/%s/" % tag.id)
+        self.assertEqual(response["id"], tag.id)
+        self.assertEqual(response["name"], tag.name)
+        self.assertEqual(response["definition"], tag.definition)
+        self.assertEqual(response["kind"], tag.kind.name)
+
+    def test_list(self):
+        count = self.qs.count()
+        response = self.get("/chemicalpresences/")
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
-
-        response = self.get("/chemicals/distinct/true_chemname/")
-        self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
-        self.assertTrue("paging" in response)
-        self.assertTrue("meta" in response)
-
-        # Test case insensitivity
-        response = self.get("/chemicals/distinct/TrUe_ChEmNaMe/")
-        self.assertEqual(response["data"][0]["true_chemname"], "bisphenol a")
-
-        # Test non-included path
-        self.assertRaises(
-            AttributeError, lambda: self.get("/chemicals/distinct/fake_attribute/")
-        )
+        self.assertEqual(count, response["meta"]["count"])

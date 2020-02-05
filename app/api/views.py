@@ -3,7 +3,7 @@ from rest_framework import viewsets
 
 from app.api import filters, serializers
 from dashboard import models
-import collections
+from django_mysql.models import add_QuerySetMixin
 
 
 class PUCViewSet(viewsets.ReadOnlyModelViewSet):
@@ -31,103 +31,71 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.ProductSerializer
-    queryset = models.Product.objects.prefetch_related(
-        Prefetch("producttopuc_set"),
-        Prefetch("documents", queryset=models.DataDocument.objects.order_by("id")),
-        Prefetch(
-            "datadocument_set__extractedtext__rawchem",
-            queryset=models.RawChem.objects.select_related(
-                "extractedchemical",
-                "dsstox",
-                "extracted_text__data_document__document_type",
-                "extracted_text__data_document__data_group__data_source",
-            ),
-        ),
+    queryset = models.Product.objects.prefetch_pucs().prefetch_related(
+        Prefetch("documents", queryset=models.DataDocument.objects.order_by("id"))
     )
     filterset_class = filters.ProductFilter
 
 
+class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    list: Service providing a list of all documents in ChemExpoDB, along with
+    metadata describing the document. Service also provides the actual data
+    points found in, and extracted from, the document. e.g., chemicals and their
+    weight fractions may be included for composition documents.
+    """
+
+    serializer_class = serializers.DocumentSerializer
+    # By using the STRAIGHT_JOIN directive, the query time is reduced
+    # from >2 seconds to ~0.0005 seconds. Pretty big! This is due to
+    # poor MySQL optimization with INNER JOIN and ORDER BY.
+    queryset = (
+        add_QuerySetMixin(models.DataDocument.objects.all())
+        .prefetch_related(
+            Prefetch(
+                "extractedtext__rawchem",
+                queryset=models.RawChem.objects.filter(dsstox__isnull=False)
+                .select_related("dsstox")
+                .select_subclasses(),
+            ),
+            Prefetch("products"),
+        )
+        .straight_join()
+        .select_related("data_group__group_type", "document_type")
+        .order_by("-id")
+    )
+
+
 class ChemicalViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Returns chemical records
-
-    list: Returns a list of all the chemical records, filtered by the
-    query parameters, along with any available curated attributes.
-
-    read: Returns a single chemical record specified by an RID
-
-    Args:
-        puc: a PUC ID to select
-        sid: a curated DSSTOX SID
-        curated: a boolean value indicating wheter to return only curated or
-                only uncurated records
-        cas: a string that will be matched (exactly) to either the true CAS or
-                the raw CAS
+    list: Service providing a list of all registered chemical
+    substances linked to data in ChemExpoDB. All chemical data in
+    ChemExpoDB is linked by the DTXSID, or the unique structure based
+    identifier for the chemical substance. Service provides the DTXSID,
+    preferred chemical name, and preferred CAS.
     """
 
-    lookup_field = "rid"
+    lookup_field = "sid"
+    lookup_url_kwarg = "id"
     serializer_class = serializers.ChemicalSerializer
-    queryset = models.RawChem.objects.all().order_by("id")
+    queryset = models.DSSToxLookup.objects.exclude(
+        curated_chemical__isnull=True
+    ).order_by("sid")
     filterset_class = filters.ChemicalFilter
 
 
-class ChemicalDistinctAttributeViewSet(viewsets.ReadOnlyModelViewSet):
-
+class ChemicalPresenceViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    The /chemicals/distinct/{attribute}/ endpoint returns the distinct
-    values for {attribute}. Currently supported attributes are:
-
-    #### sid
-    `/chemicals/distinct/sid/`
-    ```
-    "data":[{"sid":"DTXSID1020273"},{"sid":"DTXSID2021781"}...]
-    ```
-
-    #### true_cas
-    `/chemicals/distinct/true_cas/`
-    ```
-    "data":[{"true_cas":"120-47-8"},{"true_cas":"64-17-5"}...]
-    ```
-
-    #### true_chemname
-    `/chemicals/distinct/true_chemname/`
-    ```
-    "data":[{"true_chemname":"bisphenol a"},{"true_chemname":"chlorine"}...]
-    ```
-
+    list: Service providing a list of all chemical presence tags in ChemExpoDB.
+    A 'tag' (or keyword) may be applied to a chemical, indicating that there
+    exists data in ChemExpoDB providing evidence that a chemical is related to
+    that tag. Multiple tags may be applied to a single source-chemical instance,
+    in which case the tags should be interpreted as a group.
     """
 
-    Attr = collections.namedtuple("Attr", "query serializer")
-    flds = {
-        "sid": Attr(
-            query="dsstox__sid", serializer=serializers.ChemicalSidAggSerializer
-        ),
-        "true_cas": Attr(
-            query="dsstox__true_cas",
-            serializer=serializers.ChemicalTrueCasAggSerializer,
-        ),
-        "true_chem_name": Attr(
-            query="dsstox__true_chemname",
-            serializer=serializers.ChemicalTrueChemNameAggSerializer,
-        ),
-        "true_chemname": Attr(
-            query="dsstox__true_chemname",
-            serializer=serializers.ChemicalTrueChemNameAggSerializer,
-        ),
-    }
-
-    def get_serializer_class(self):
-        q = self.kwargs.get("attribute", "")
-        attr = self.flds.get(q.lower())
-        if attr:
-            return attr.serializer
-        return serializers.ChemicalSerializer
-
-    def get_queryset(self):
-        q = self.kwargs.get("attribute", "")
-        attr = self.flds.get(q.lower())
-        qs = models.RawChem.objects.filter(dsstox__isnull=False)
-        if attr:
-            return qs.values(attr.query).distinct().order_by(attr.query)
-        else:
-            return qs
+    serializer_class = serializers.ChemicalPresenceSerializer
+    queryset = (
+        models.ExtractedListPresenceTag.objects.all()
+        .select_related("kind")
+        .order_by("id")
+    )
