@@ -130,13 +130,6 @@ class TestChemical(TestCase):
         self.assertEqual(response["name"], chem.true_chemname)
         self.assertEqual(response["cas"], chem.true_cas)
 
-    def test_retrieve_by_sid(self):
-        sid = "DTXSID6026296"
-        chem_count = models.RawChem.objects.filter(dsstox__sid=sid).count()
-        response = self.get("/chemicals/", {"sid": sid})
-        self.assertEqual(response["paging"]["size"], chem_count)
-        self.assertEqual(response["data"][0]["cas"], "7732-18-5")
-
     def test_list(self):
         # test without filter
         count = self.qs.count()
@@ -151,12 +144,6 @@ class TestChemical(TestCase):
         ).count()
         response = self.get("/chemicals/", {"puc": 1})
         self.assertEqual(count, response["meta"]["count"])
-
-    def test_distinct_queries(self):
-        response = self.get("/chemicals/distinct/sid/")
-        self.assertEqual(response["data"][0]["sid"], "DTXSID1020273")
-        self.assertTrue("paging" in response)
-        self.assertTrue("meta" in response)
 
 
 class TestChemicalPresence(TestCase):
