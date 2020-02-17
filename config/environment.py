@@ -32,6 +32,11 @@ class MetaEnv(type):
         return cls._get("FACTOTUM_WS_PORT", deafult)
 
     @property
+    def MEDIA_URL(cls):
+        default = "/media/"
+        return cls._get("MEDIA_URL", default)
+
+    @property
     def SQL_DATABASE(cls):
         default = "factotum" if cls.DEBUG else ""
         return cls._get("SQL_DATABASE", default)
