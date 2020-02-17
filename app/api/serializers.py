@@ -227,7 +227,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     )
 
     def get_url(self, obj) -> serializers.URLField:
-        return f"http://factotum.epa.gov/media/{obj.file}" if obj.file else None
+        return obj.file.url if obj.file else None
 
     class Meta:
         model = models.DataDocument
