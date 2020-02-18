@@ -166,19 +166,9 @@ class TestChemicalPresence(TestCase):
 
 
 class TestDocument(TestCase):
-    dtxsid = "DTXSID6026296"
-
-    def get_source_field(self, key):
-        if key == "url":
-            return "file.name"
-        if key == "date":
-            return "extractedtext.doc_date"
-        if key == "group_type":
-            return "data_group.group_type.title"
-        return key
-
     def test_retrieve(self):
-        doc = models.DataDocument.objects.prefetch_related("products").get(id=147446)
+        doc_id = 147446
+        doc = models.DataDocument.objects.prefetch_related("products").get(id=doc_id)
         response = self.get("/documents/%d/" % doc.id)
 
         self.assertEqual(doc.title, response["title"])
