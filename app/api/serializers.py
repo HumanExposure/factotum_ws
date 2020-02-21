@@ -206,8 +206,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         help_text="Standardized description of the type of document (e.g. Safety Data Sheet (SDS), \
             product label, journal article, government report).",
     )
-    url = serializers.URLField(
-        source="pdf_url",
+    url = serializers.SerializerMethodField(
         read_only=True,
         allow_null=True,
         label="URL",
@@ -225,6 +224,9 @@ class DocumentSerializer(serializers.ModelSerializer):
     chemicals = ExtractedChemicalSerializer(
         label="Chemicals", many=True, read_only=True
     )
+
+    def get_url(self, obj) -> serializers.URLField:
+        return obj.file.url if obj.file else None
 
     class Meta:
         model = models.DataDocument
