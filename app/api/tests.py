@@ -172,3 +172,27 @@ class TestChemicalPresence(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
+
+
+class TestDocument(TestCase):
+    def test_retrieve(self):
+        doc_id = 147446
+        doc = models.DataDocument.objects.prefetch_related("products").get(id=doc_id)
+        response = self.get("/documents/%d/" % doc.id)
+
+        self.assertEqual(doc.title, response["title"])
+        self.assertEqual(doc.subtitle, response["subtitle"])
+        self.assertEqual(doc.organization, response["organization"])
+        self.assertEqual(doc.extractedtext.doc_date, response["date"])
+        self.assertEqual(doc.data_group.group_type.title, response["data_type"])
+        self.assertEqual(doc.document_type.title, response["document_type"])
+        self.assertEqual(doc.file.url, response["url"])
+        self.assertEqual(doc.note, response["notes"])
+
+    def test_list(self):
+        # test without filter
+        response = self.get("/documents/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        count = models.DataDocument.objects.count()
+        self.assertEqual(count, response["meta"]["count"])
