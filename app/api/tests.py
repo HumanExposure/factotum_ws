@@ -71,6 +71,12 @@ class TestPUC(TestCase):
             source = self.get_source_field(key)
             self.assertEqual(getattr(puc, source), response["data"][0][key])
 
+    def test_distinct_pucs(self):
+        """The PUCs returned for a chemical should be distinct
+        """
+        dtxsid = "DTXSID9022528"
+        response = self.get("/pucs/?chemical=%d" % dtxsid)
+
 
 class TestProduct(TestCase):
     dtxsid = "DTXSID6026296"
