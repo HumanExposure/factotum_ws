@@ -71,6 +71,15 @@ class TestPUC(TestCase):
             source = self.get_source_field(key)
             self.assertEqual(getattr(puc, source), response["data"][0][key])
 
+    def test_distinct_pucs(self):
+        """The PUCs returned for a chemical should be distinct
+        """
+        dtxsid = "DTXSID9022528"
+        response = self.get("/pucs/?chemical=%s" % dtxsid)
+        # the chemical is linked to two PUCs multiple times,
+        # the payload should only include one object for each PUC
+        self.assertEqual(len(response["data"]), 2)
+
 
 class TestProduct(TestCase):
     dtxsid = "DTXSID6026296"
