@@ -75,7 +75,10 @@ class TestPUC(TestCase):
         """The PUCs returned for a chemical should be distinct
         """
         dtxsid = "DTXSID9022528"
-        response = self.get("/pucs/?chemical=%d" % dtxsid)
+        response = self.get("/pucs/?chemical=%s" % dtxsid)
+        # the chemical is linked to two PUCs multiple times,
+        # the payload should only include one object for each PUC
+        self.assertEqual(len(response["data"]), 2)
 
 
 class TestProduct(TestCase):
