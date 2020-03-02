@@ -170,7 +170,7 @@ class ExtractedChemicalSerializer(serializers.ModelSerializer):
                 "help_text": "Upper bound of weight fraction for the chemical substance in the product,\
                  if provided on the document. If weight fraction is provided as a range, lower and \
                  upper values are populated. Values range from 0-1.",
-                "source": "lower_wf_analysis",
+                "source": "upper_wf_analysis",
             },
             "ingredient_rank": {
                 "label": "Ingredient rank",
