@@ -1,7 +1,10 @@
+import uuid
+
 from django.db import connection, reset_queries
 from django.test.utils import override_settings
 from drf_yasg.generators import EndpointEnumerator
 
+from app.api.serializers import ExtractedChemicalSerializer
 from app.core.test import TestCase
 
 from dashboard import models
@@ -70,6 +73,15 @@ class TestPUC(TestCase):
         for key in response["data"][0]:
             source = self.get_source_field(key)
             self.assertEqual(getattr(puc, source), response["data"][0][key])
+
+    def test_distinct_pucs(self):
+        """The PUCs returned for a chemical should be distinct
+        """
+        dtxsid = "DTXSID9022528"
+        response = self.get("/pucs/?chemical=%s" % dtxsid)
+        # the chemical is linked to two PUCs multiple times,
+        # the payload should only include one object for each PUC
+        self.assertEqual(len(response["data"]), 2)
 
 
 class TestProduct(TestCase):
@@ -163,3 +175,72 @@ class TestChemicalPresence(TestCase):
         self.assertTrue("paging" in response)
         self.assertTrue("meta" in response)
         self.assertEqual(count, response["meta"]["count"])
+
+
+class TestDocument(TestCase):
+    def test_retrieve(self):
+        doc_id = 147446
+        doc = models.DataDocument.objects.prefetch_related("products").get(id=doc_id)
+        response = self.get("/documents/%d/" % doc.id)
+
+        self.assertEqual(doc.title, response["title"])
+        self.assertEqual(doc.subtitle, response["subtitle"])
+        self.assertEqual(doc.organization, response["organization"])
+        self.assertEqual(doc.extractedtext.doc_date, response["date"])
+        self.assertEqual(doc.data_group.group_type.title, response["data_type"])
+        self.assertEqual(doc.document_type.title, response["document_type"])
+        self.assertEqual(doc.file.url, response["url"])
+        self.assertEqual(doc.note, response["notes"])
+        self.assertEqual(
+            doc.chemicals.filter(dsstox__isnull=False).count(),
+            len(response["chemicals"]),
+        )
+
+    def test_list(self):
+        # test without filter
+        response = self.get("/documents/")
+        self.assertTrue("paging" in response)
+        self.assertTrue("meta" in response)
+        count = models.DataDocument.objects.count()
+        self.assertEqual(count, response["meta"]["count"])
+
+
+class TestExtractedChemicalSerializer(TestCase):
+    def test_serialize(self):
+        et = models.ExtractedText.objects.first()
+        dsstox = models.DSSToxLookup.objects.first()
+        extracted_chemical = models.ExtractedChemical.objects.create(
+            extracted_text=et,
+            dsstox=dsstox,
+            component=str(uuid.uuid1()),
+            lower_wf_analysis=0.1,
+            central_wf_analysis=0.2,
+            upper_wf_analysis=0.3,
+            ingredient_rank=1,
+        )
+        serialized_extracted_chemical = ExtractedChemicalSerializer(extracted_chemical)
+
+        self.assertEqual(
+            extracted_chemical.dsstox.sid,
+            serialized_extracted_chemical.data["chemical_id"],
+        )
+        self.assertEqual(
+            extracted_chemical.component,
+            serialized_extracted_chemical.data["component"],
+        )
+        self.assertEqual(
+            format(extracted_chemical.lower_wf_analysis, ".15f"),
+            serialized_extracted_chemical.data["lower_weight_fraction"],
+        )
+        self.assertEqual(
+            format(extracted_chemical.central_wf_analysis, ".15f"),
+            serialized_extracted_chemical.data["central_weight_fraction"],
+        )
+        self.assertEqual(
+            format(extracted_chemical.upper_wf_analysis, ".15f"),
+            serialized_extracted_chemical.data["upper_weight_fraction"],
+        )
+        self.assertEqual(
+            extracted_chemical.ingredient_rank,
+            serialized_extracted_chemical.data["ingredient_rank"],
+        )
