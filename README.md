@@ -1,2 +1,2 @@
 # factotum_ws
-Web Services for Factotum
+This repo has been transfered into the Facotum main repo and is no longer used.
